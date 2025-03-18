@@ -5,7 +5,8 @@ export interface User {
 
 export interface LoginResponse {
   message: string;
-  token: string;
+  access_token: string; // Updated to match backend response
+  token_type: string; // Added to match backend response
   username: string;
 }
 
@@ -44,7 +45,7 @@ export default class AuthService {
       throw new Error(data.error || "Login failed");
     }
 
-    localStorage.setItem("token", data.token);
+    localStorage.setItem("token", data.access_token);
     localStorage.setItem("username", data.username);
 
     return data;

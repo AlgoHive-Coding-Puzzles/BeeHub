@@ -1,0 +1,14 @@
+#
+# BeeHub - Api - (Python)
+#
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.eggs
+*.whl
+*.env
+*.venv
+*.db
