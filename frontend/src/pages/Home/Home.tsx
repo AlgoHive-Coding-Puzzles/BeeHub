@@ -1,4 +1,3 @@
-import useFetch from "../../hooks/useFetch";
 import { Theme } from "../../types/Theme";
 import { Card } from "primereact/card";
 import { Button } from "primereact/button";
@@ -6,15 +5,20 @@ import { InputText } from "primereact/inputtext";
 import { Dialog } from "primereact/dialog";
 import { useEffect, useState } from "react";
 import { convertBytes } from "../../utils/utils";
-import AuthService from "../../services/AuthService";
+import { Catalog } from "../../types/Catalog";
 
 interface HomeProps {
   setSelectedMenu: (menu: string) => void;
+  selectedCatalog: Catalog;
 }
 
-export default function HomePage({ setSelectedMenu }: HomeProps) {
-  const { data, loading, error } = useFetch<Theme[]>("/themes");
-  const [themes, setThemes] = useState<Theme[] | null>(data);
+export default function HomePage({
+  setSelectedMenu,
+  selectedCatalog,
+}: HomeProps) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [themes, setThemes] = useState<Theme[] | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [newThemeName, setNewThemeName] = useState<string>("");
@@ -22,12 +26,41 @@ export default function HomePage({ setSelectedMenu }: HomeProps) {
     useState<boolean>(false);
 
   useEffect(() => {
-    setThemes(data);
-  }, [data]);
+    const fetchThemes = async () => {
+      try {
+        setLoading(true);
+
+        const response = await fetch(selectedCatalog.address + "/themes", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${selectedCatalog.private_key}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch themes");
+        }
+        const data = await response.json();
+        setThemes(data);
+      } catch (error) {
+        console.error("Error fetching themes:", error);
+        setError(true);
+        setErrorMsg("An error occurred while fetching the themes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchThemes();
+  }, [selectedCatalog.address, selectedCatalog.private_key]);
 
   const handleReload = () => {
-    fetch("/theme/reload", {
+    fetch(selectedCatalog.address + "/theme/reload", {
       method: "POST",
+      headers: {
+        Authorization: `Bearer ${selectedCatalog.private_key}`,
+        "Content-Type": "application/json",
+      },
     }).then((res) => {
       if (res.ok) {
         setSuccessMsg("Data reloaded successfully");
@@ -44,11 +77,10 @@ export default function HomePage({ setSelectedMenu }: HomeProps) {
   };
 
   const handleDeleteTheme = (theme: Theme) => {
-    const token = AuthService.getToken();
-    fetch(`/theme?name=${theme.name}`, {
+    fetch(selectedCatalog.address + `/theme?name=${theme.name}`, {
       method: "DELETE",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${selectedCatalog.private_key}`,
         "Content-Type": "application/json",
       },
     }).then((res) => {
@@ -67,11 +99,10 @@ export default function HomePage({ setSelectedMenu }: HomeProps) {
   };
 
   const handleCreateTheme = () => {
-    const token = AuthService.getToken();
-    fetch(`/theme?name=${newThemeName}`, {
+    fetch(selectedCatalog.address + `/theme?name=${newThemeName}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${selectedCatalog.private_key}`,
         "Content-Type": "application/json",
       },
     }).then((res) => {
@@ -92,7 +123,7 @@ export default function HomePage({ setSelectedMenu }: HomeProps) {
   };
 
   const reloadData = () => {
-    fetch("/themes", {
+    fetch(selectedCatalog.address + "/themes", {
       method: "GET",
     })
       .then((res) => res.json())

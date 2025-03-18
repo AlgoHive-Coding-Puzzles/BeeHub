@@ -7,47 +7,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      "/puzzle/upload": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/puzzle": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/themes": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/theme/reload": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/theme": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/name": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/auth": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/services": {
-        target: "http://localhost:8081",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/catalogs": {
+      "^/(auth|services|catalogs)": {
         target: "http://localhost:8081",
         changeOrigin: true,
         secure: false,

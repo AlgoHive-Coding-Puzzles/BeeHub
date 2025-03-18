@@ -14,5 +14,5 @@ export const getServices = async (): Promise<Service[]> => {
   }
 
   const data = await response.json();
-  return data.services as Service[];
+  return data as Service[];
 };

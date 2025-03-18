@@ -52,7 +52,10 @@ async def create_catalog(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Catalog with this address already exists"
         )
-    
+        
+
+
+    print(catalog_data)    
     # Create new catalog
     new_catalog = Catalog(
         address=catalog_data.address,
