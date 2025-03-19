@@ -2,14 +2,19 @@ import classNames from "classnames";
 import "./Sidebar.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "primereact/button";
+import { Catalog } from "../../types/Catalog";
 
 interface SidebarProps {
   selectedMenu: string;
+  currentCatalog: Catalog | null;
+  currentTheme: string | null;
   setSelectedMenu: (menu: string) => void;
 }
 
 export default function Sidebar({
   selectedMenu,
+  currentCatalog,
+  currentTheme,
   setSelectedMenu,
 }: SidebarProps) {
   const { username, logout } = useAuth();
@@ -27,19 +32,28 @@ export default function Sidebar({
       className: classNames({ "active-menu-item": selectedMenu === "Home" }),
     },
     {
-      label: "Theme",
-      icon: "pi pi-folder",
-      command: () => {},
-      className: classNames({
-        "active-menu-item": selectedMenu.startsWith("Theme"),
-      }),
+      label: "Catalog",
+      icon: "pi pi-book",
+      command: () => setSelectedMenu("Catalog"),
+      className: classNames(
+        { "active-menu-item": selectedMenu === "Catalog" },
+        { "disabled-menu-item": !currentCatalog }
+      ),
     },
     {
-      label: "Puzzles",
-      icon: "pi pi-trophy",
-      command: () => setSelectedMenu("Puzzles"),
-      className: classNames({ "active-menu-item": selectedMenu === "Puzzles" }),
+      label: "Theme",
+      icon: "pi pi-folder",
+      command: () => {
+        setSelectedMenu("Theme");
+      },
+      className: classNames(
+        {
+          "active-menu-item": selectedMenu === "Theme",
+        },
+        { "disabled-menu-item": !currentTheme }
+      ),
     },
+
     {
       label: "Team",
       icon: "pi pi-users",

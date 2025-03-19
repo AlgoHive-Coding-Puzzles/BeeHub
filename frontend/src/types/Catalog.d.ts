@@ -3,5 +3,5 @@ export interface Catalog {
   address: string;
   name: string;
   description?: string;
-  private_key?: string;
+  private_key: string;
 }

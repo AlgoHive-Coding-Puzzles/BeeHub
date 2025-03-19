@@ -10,11 +10,10 @@ import { Toast } from "primereact/toast";
 import AuthService from "../../services/AuthService";
 
 interface ThemeProps {
-  selectedMenu: string;
+  selectedTheme: string | null;
 }
 
-export default function ThemePage({ selectedMenu }: ThemeProps) {
-  const selectedTheme = selectedMenu.split("/")[1];
+export default function ThemePage({ selectedTheme }: ThemeProps) {
   const toast = useRef<Toast>(null);
 
   const [refreshTheme, setRefreshTheme] = useState<boolean>(false);
@@ -111,7 +110,10 @@ export default function ThemePage({ selectedMenu }: ThemeProps) {
         })}
       </DataTable>
 
-      <FileUploadComponent theme={selectedTheme} setRefresh={setRefreshTheme} />
+      <FileUploadComponent
+        theme={selectedTheme as string}
+        setRefresh={setRefreshTheme}
+      />
     </div>
   );
 }
