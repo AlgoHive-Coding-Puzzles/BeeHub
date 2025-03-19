@@ -7,54 +7,67 @@ import { convertBytes } from "../../utils/utils";
 import { Puzzle } from "../../types/Puzzle";
 import FileUploadComponent from "../../components/FileUpload/FileUpload";
 import { Toast } from "primereact/toast";
-import AuthService from "../../services/AuthService";
+import { Catalog } from "../../types/Catalog";
+import {
+  fromCatalogDeletePuzzle,
+  fromCatalogGetTheme,
+} from "../../services/catalogsService";
 
 interface ThemeProps {
+  selectedCatalog: Catalog;
   selectedTheme: string | null;
 }
 
-export default function ThemePage({ selectedTheme }: ThemeProps) {
+export default function ThemePage({
+  selectedCatalog,
+  selectedTheme,
+}: ThemeProps) {
   const toast = useRef<Toast>(null);
 
   const [refreshTheme, setRefreshTheme] = useState<boolean>(false);
   const [theme, setTheme] = useState<Theme>();
 
   useEffect(() => {
-    fetch(`/theme?name=${selectedTheme}`)
-      .then((res) => res.json())
-      .then((data) => {
-        data.puzzles.forEach((puzzle: Puzzle) => {
-          puzzle.compressedSize = convertBytes(puzzle.compressedSize as number);
-          puzzle.uncompressedSize = convertBytes(
-            puzzle.uncompressedSize as number
-          );
-        });
-
-        setTheme(data);
+    fromCatalogGetTheme(
+      selectedCatalog.address,
+      selectedCatalog.private_key,
+      selectedTheme as string
+    ).then((data) => {
+      data.puzzles.forEach((puzzle: Puzzle) => {
+        puzzle.compressedSize = convertBytes(puzzle.compressedSize as number);
+        puzzle.uncompressedSize = convertBytes(
+          puzzle.uncompressedSize as number
+        );
       });
-  }, [selectedTheme, refreshTheme]);
+
+      setTheme(data);
+    });
+  }, [
+    selectedTheme,
+    refreshTheme,
+    selectedCatalog.address,
+    selectedCatalog.private_key,
+  ]);
 
   const handleDeletePuzzle = (puzzle: Puzzle) => {
-    const token = AuthService.getToken();
-    fetch(`/api/puzzle?theme=${selectedTheme}&puzzle=${puzzle.name}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    }).then((res) => {
+    fromCatalogDeletePuzzle(
+      selectedCatalog.address,
+      selectedCatalog.private_key,
+      selectedTheme as string,
+      puzzle.name
+    ).then((res) => {
       if (res.ok) {
-        setTheme((prevTheme) => {
-          return {
-            ...prevTheme!,
-            puzzles: prevTheme!.puzzles.filter((p) => p.name !== puzzle.name),
-          };
-        });
-
         toast.current?.show({
-          severity: "info",
+          severity: "success",
           summary: "Success",
-          detail: "Puzzle Deleted",
+          detail: `Puzzle ${puzzle.name} deleted`,
+        });
+        setRefreshTheme(!refreshTheme);
+      } else {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: `Failed to delete puzzle ${puzzle.name}`,
         });
       }
     });
@@ -111,7 +124,8 @@ export default function ThemePage({ selectedTheme }: ThemeProps) {
       </DataTable>
 
       <FileUploadComponent
-        theme={selectedTheme as string}
+        selectedCatalog={selectedCatalog}
+        selectedTheme={selectedTheme as string}
         setRefresh={setRefreshTheme}
       />
     </div>

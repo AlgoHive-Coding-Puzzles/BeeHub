@@ -13,15 +13,21 @@ import { Button } from "primereact/button";
 import { Tooltip } from "primereact/tooltip";
 import { Tag } from "primereact/tag";
 import "./FileUpload.css";
-import AuthService from "../../services/AuthService";
+import { Catalog } from "../../types/Catalog";
+import {
+  fromCatalogRefreshThemes,
+  fromCatalogUploadPuzzle,
+} from "../../services/catalogsService";
 
 interface FileUploadProps {
-  theme: string;
+  selectedCatalog: Catalog;
+  selectedTheme: string;
   setRefresh: (value: boolean) => void;
 }
 
 export default function FileUploadComponent({
-  theme,
+  selectedCatalog,
+  selectedTheme,
   setRefresh,
 }: FileUploadProps) {
   const toast = useRef<Toast>(null);
@@ -90,25 +96,22 @@ export default function FileUploadComponent({
           }
           const fileFormData = new FormData();
           fileFormData.append("file", file, file.name);
-          const token = AuthService.getToken();
-          return fetch(`/api/puzzle/upload?theme=${theme}`, {
-            method: "POST",
-            body: fileFormData,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+
+          return fromCatalogUploadPuzzle(
+            selectedCatalog.address,
+            selectedCatalog.private_key,
+            selectedTheme,
+            fileFormData
+          );
         })
       );
 
       const allSuccessful = responses.every((response) => response.ok);
 
-      fetch("/theme/reload", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${AuthService.getToken()}`,
-        },
-      }).then((res) => {
+      fromCatalogRefreshThemes(
+        selectedCatalog.address,
+        selectedCatalog.private_key
+      ).then((res) => {
         if (res.ok) {
           setRefresh(true);
           // Remove the uploaded files from the file upload component

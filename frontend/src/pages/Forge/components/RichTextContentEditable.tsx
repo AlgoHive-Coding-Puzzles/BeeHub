@@ -53,8 +53,6 @@ const RichTextContentEditable = ({
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount) return;
 
-    console.log(selection);
-
     // If the selection is not {anchorNode: text
     if (selection.anchorNode?.nodeName !== "#text") {
       selection.collapseToEnd();

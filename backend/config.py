@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     # Database settings
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./beehub.db")
     
+    # Database connection settings
+    DATABASE_POOL_SIZE: int = int(os.environ.get("DATABASE_POOL_SIZE", "20"))
+    DATABASE_POOL_RECYCLE: int = int(os.environ.get("DATABASE_POOL_RECYCLE", "3600")) # 1 hour
+    
     # JWT settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-for-jwt-token-generation")
     ALGORITHM: str = "HS256"

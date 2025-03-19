@@ -12,6 +12,7 @@ import Login from "./pages/Login/Login";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Forge from "./pages/Forge/Forge";
 import Settings from "./pages/Settings/Settings";
+import TeamPage from "./pages/Team/Team"; // Add import for Team page
 import { Catalog } from "./types/Catalog";
 import CatalogPage from "./pages/Catalog/Catalog";
 
@@ -46,9 +47,14 @@ function AppContent() {
           />
         );
       case "Theme" === selectedMenu:
-        return <ThemePage selectedTheme={currentTheme} />;
+        return (
+          <ThemePage
+            selectedCatalog={currentCatalog as Catalog}
+            selectedTheme={currentTheme}
+          />
+        );
       case "Team" === selectedMenu:
-        return <p className="text-center">Manage users</p>;
+        return <TeamPage />; // Add Team page rendering
       case "Forge" === selectedMenu:
         return <Forge />;
       case "Settings" === selectedMenu:
@@ -57,14 +63,20 @@ function AppContent() {
   };
 
   return (
-    <div className="app-container">
+    <div
+      className="app-container"
+      style={{ minHeight: "100vh", display: "flex" }}
+    >
       <AppSidebar
         selectedMenu={selectedMenu}
         currentCatalog={currentCatalog}
         currentTheme={currentTheme}
         setSelectedMenu={setSelectedMenu}
       />
-      <div className="content-container">
+      <div
+        className="content-container"
+        style={{ flexGrow: 1, marginLeft: "8rem", padding: "1rem" }}
+      >
         <div className="mt-8">{renderContent()}</div>
       </div>
     </div>

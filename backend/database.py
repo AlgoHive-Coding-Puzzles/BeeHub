@@ -6,8 +6,16 @@ from datetime import datetime
 from config import settings
 from utils.password import get_password_hash
 
-# Create database engine
-engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
+# Create database engine with improved connection pooling
+engine = create_engine(
+    settings.DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    pool_size=20,           # Increase from default 5
+    max_overflow=20,        # Increase from default 10
+    pool_timeout=60,        # Increase connection timeout
+    pool_recycle=3600,      # Recycle connections after 1 hour
+    pool_pre_ping=True      # Test connections before using them
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
@@ -28,7 +36,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(50), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    last_connected = Column(DateTime, default=datetime.utcnow)
+    last_connected = Column(DateTime, default=None)
     is_owner = Column(Boolean, default=False, nullable=False)
     
     # Define relationship to catalogs

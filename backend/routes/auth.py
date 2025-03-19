@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -51,9 +51,16 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    print(user.is_owner)
+    
+    # Update last connected time
+    user.last_connected = datetime.now()
+    db.commit()
+    
     return {"access_token": access_token, "token_type": "bearer", "username": user.username, "is_owner": user.is_owner}
 
+async def logout():
+    """Logout user by invalidating the token."""
+    # Invalidate the token by removing it from the database or cache
 
 @router.get("/user", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user)):

@@ -74,19 +74,19 @@ export default class AuthService {
   }
 
   static async logout(): Promise<void> {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.getToken()}`,
-        },
-      });
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("username");
-    }
+    // try {
+    //   await fetch("/api/auth/logout", {
+    //     method: "POST",
+    //     headers: {
+    //       Authorization: `Bearer ${this.getToken()}`,
+    //     },
+    //   });
+    // } catch (error) {
+    //   console.error("Logout error:", error);
+    // } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    // }
   }
 
   static async deleteAccount(): Promise<{ message: string }> {

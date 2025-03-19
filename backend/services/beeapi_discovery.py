@@ -38,6 +38,9 @@ class BeeApiDiscoveryService:
         self.running = False
         if self.discovery_thread:
             self.discovery_thread.join(timeout=5.0)
+        # Ensure resources are released when stopping
+        if hasattr(self.discovery_service, 'close') and callable(getattr(self.discovery_service, 'close')):
+            self.discovery_service.close()
         logger.info("BeeAPI discovery stopped")
     
     def _discovery_loop(self):
@@ -53,21 +56,27 @@ class BeeApiDiscoveryService:
     
     def _discover_services(self):
         """Discover BeeAPI services"""
-        services = self.discovery_service.discover_services(target_ports=settings.DISCOVERY_PORT_RANGE)
-        
-        # Filter for BeeAPI services
-        beeapi_services = []
-        for service in services:
-            # Check if it's a Docker service with BeeAPI label
-            if service['service_type'] == 'docker' and service.get('details', {}).get('labels', {}).get('algohive.service.type') == settings.DISCOVERY_SERVICE_TYPE:
-                beeapi_services.append(service)
-            # For local services, we rely on port range only
-            elif service['service_type'] == 'local' and service['port'] in settings.DISCOVERY_PORT_RANGE:
-                beeapi_services.append(service)
-                
-        self.discovered_apis = beeapi_services
-        logger.info(f"Discovered {len(beeapi_services)} BeeAPI services")
-        
+        try:
+            services = self.discovery_service.discover_services(target_ports=settings.DISCOVERY_PORT_RANGE)
+            
+            # Filter for BeeAPI services
+            beeapi_services = []
+            for service in services:
+                # Check if it's a Docker service with BeeAPI label
+                if service['service_type'] == 'docker' and service.get('details', {}).get('labels', {}).get('algohive.service.type') == settings.DISCOVERY_SERVICE_TYPE:
+                    beeapi_services.append(service)
+                # For local services, we rely on port range only
+                elif service['service_type'] == 'local' and service['port'] in settings.DISCOVERY_PORT_RANGE:
+                    beeapi_services.append(service)
+                    
+            self.discovered_apis = beeapi_services
+            logger.info(f"Discovered {len(beeapi_services)} BeeAPI services")
+        except Exception as e:
+            logger.error(f"Error in discovery process: {e}")
+            # Make sure to release any potential DB resources on error
+            if hasattr(self.discovery_service, 'close') and callable(getattr(self.discovery_service, 'close')):
+                self.discovery_service.close()
+    
     def get_discovered_apis(self) -> List[Dict[str, Any]]:
         """Return the list of discovered BeeAPI services"""
         return self.discovered_apis

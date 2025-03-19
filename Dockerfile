@@ -47,9 +47,6 @@ COPY backend/ /app/backend/
 # Copy built frontend from frontend-builder to the static directory
 COPY --from=frontend-builder /app/frontend/dist/ /app/backend/static/
 
-# Create directories required by the application
-RUN mkdir -p /app/static/assets
-
 # Set working directory to the backend
 WORKDIR /app/backend
 

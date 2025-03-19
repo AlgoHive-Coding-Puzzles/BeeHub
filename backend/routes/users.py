@@ -1,9 +1,10 @@
+from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
-from database import get_db, User
+from database import get_db, User, Catalog
 from utils.password import get_password_hash, verify_password
 from utils.auth import get_current_user, get_owner_user
 
@@ -30,10 +31,14 @@ class UserResponse(BaseModel):
     id: int
     username: str
     is_owner: bool
+    last_connected: Optional[datetime] = None
 
     class Config:
         from_attributes = True  # Updated from orm_mode
 
+
+class CatalogAccessUpdate(BaseModel):
+    catalog_ids: List[int]
 
 @router.post("/", response_model=UserResponse)
 async def create_user(
@@ -55,7 +60,7 @@ async def create_user(
     new_user = User(
         username=user_data.username,
         password=hashed_password,
-        is_owner=user_data.is_owner
+        is_owner=user_data.is_owner,
     )
     
     db.add(new_user)
@@ -68,12 +73,10 @@ async def create_user(
 @router.get("/", response_model=List[UserResponse])
 async def get_all_users(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_owner_user)  # Only owners can see all users
 ):
     """Get all users (owner only)."""
     users = db.query(User).all()
     return users
-
 
 @router.get("/{user_id}", response_model=UserResponse)
 async def get_user(
@@ -164,10 +167,54 @@ async def change_password(
     
     return {"message": "Password updated successfully"}
 
-@router.get("/is-owner", response_model=bool)
+@router.get("/{username}/is-owner", response_model=bool)
 async def is_owner(
+    username: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
 ):
-    """Check if the current user is an owner."""
-    return current_user.is_owner
+    """Check if a user is an owner."""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user.is_owner
+
+@router.get("/{user_id}/catalogs", response_model=List[int])
+async def get_user_catalogs(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_owner_user)  # Only owners can view user catalogs
+):
+    """Get list of catalog IDs a user has access to (owner only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    catalog_ids = [catalog.id for catalog in user.catalogs]
+    return catalog_ids
+
+
+@router.put("/{user_id}/catalogs", status_code=status.HTTP_200_OK)
+async def update_user_catalogs(
+    user_id: int,
+    access_data: CatalogAccessUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_owner_user)  # Only owners can update user catalogs
+):
+    """Update which catalogs a user has access to (owner only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Clear existing access
+    user.catalogs = []
+    
+    # Add new access
+    for catalog_id in access_data.catalog_ids:
+        catalog = db.query(Catalog).filter(Catalog.id == catalog_id).first()
+        if catalog:
+            user.catalogs.append(catalog)
+    
+    db.commit()
+    
+    return {"message": f"Catalog access updated for user {user.username}"}

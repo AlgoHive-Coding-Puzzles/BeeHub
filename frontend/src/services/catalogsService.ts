@@ -1,4 +1,5 @@
 import { Catalog } from "../types/Catalog";
+import { Theme } from "../types/Theme";
 
 export const getCatalogs = async (): Promise<Catalog[]> => {
   const response = await fetch("/api/catalogs/", {
@@ -34,8 +35,6 @@ export interface UpdateCatalogDto {
 export const createCatalog = async (
   catalog: CreateCatalogDto
 ): Promise<Catalog> => {
-  console.log(catalog);
-
   const response = await fetch("/api/catalogs/", {
     method: "POST",
     headers: {
@@ -44,8 +43,6 @@ export const createCatalog = async (
     },
     body: JSON.stringify(catalog),
   });
-
-  console.log(response);
 
   if (!response.ok) {
     throw new Error("Failed to create catalog");
@@ -191,6 +188,105 @@ export const fromCatalogCreateTheme = async (
     return response;
   } catch (error) {
     console.error("Error creating theme:", error);
+    throw error;
+  }
+};
+
+export const fromCatalogRefreshThemes = async (
+  address: string,
+  key: string
+): Promise<Response> => {
+  try {
+    const response = await fetch(`${address}/theme/reload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to refresh themes");
+    }
+    return response;
+  } catch (error) {
+    console.error("Error refreshing themes:", error);
+    throw error;
+  }
+};
+
+export const fromCatalogUploadPuzzle = async (
+  address: string,
+  key: string,
+  theme: string,
+  fileFormData: FormData
+) => {
+  try {
+    const response = await fetch(`${address}/puzzle/upload?theme=${theme}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+      },
+      body: fileFormData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload puzzle");
+    }
+    return response;
+  } catch (error) {
+    console.error("Error uploading puzzle:", error);
+    throw error;
+  }
+};
+
+export const fromCatalogGetTheme = async (
+  address: string,
+  key: string,
+  themeName: string
+): Promise<Theme> => {
+  try {
+    const response = await fetch(`${address}/theme?name=${themeName}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Failed to get theme");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error getting theme:", error);
+    throw error;
+  }
+};
+
+export const fromCatalogDeletePuzzle = async (
+  address: string,
+  key: string,
+  themeName: string,
+  puzzleName: string
+): Promise<Response> => {
+  try {
+    const response = await fetch(
+      `${address}/puzzle?theme=${themeName}&puzzle=${puzzleName}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Failed to delete puzzle");
+    }
+    return response;
+  } catch (error) {
+    console.error("Error deleting puzzle:", error);
     throw error;
   }
 };

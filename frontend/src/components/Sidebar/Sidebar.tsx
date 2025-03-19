@@ -3,6 +3,7 @@ import "./Sidebar.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "primereact/button";
 import { Catalog } from "../../types/Catalog";
+import { useEffect, useRef, useState } from "react";
 
 interface SidebarProps {
   selectedMenu: string;
@@ -18,6 +19,26 @@ export default function Sidebar({
   setSelectedMenu,
 }: SidebarProps) {
   const { username, logout } = useAuth();
+  const navRef = useRef<HTMLElement>(null);
+  const [compact, setCompact] = useState(false);
+
+  // Observer pour ajuster en fonction de la hauteur disponible
+  useEffect(() => {
+    const checkHeight = () => {
+      if (navRef.current) {
+        const windowHeight = window.innerHeight;
+        // Si l'écran est petit, passons en mode compact
+        setCompact(windowHeight < 700);
+      }
+    };
+
+    checkHeight(); // Vérification initiale
+    window.addEventListener("resize", checkHeight);
+
+    return () => {
+      window.removeEventListener("resize", checkHeight);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -77,12 +98,17 @@ export default function Sidebar({
   ];
 
   return (
-    <nav className="w-56 p-sidebar-sm flex flex-col">
+    <nav ref={navRef} className="w-56 p-sidebar-sm flex flex-col">
       <div className="p-3 flex flex-col h-full">
-        <div className="mb-8 mt-4 text-center">
+        <div
+          className={classNames("text-center", {
+            "mb-4 mt-2": compact,
+            "mb-8 mt-4": !compact,
+          })}
+        >
           <i className="pi pi-box text-orange-500 sb-icon"></i>
         </div>
-        <div className="w-full" style={{ marginTop: "2rem" }}>
+        <div className="w-full flex-grow">
           <ul className="menu p-reset">
             {items.map((item) => (
               <li
@@ -106,17 +132,19 @@ export default function Sidebar({
             ))}
           </ul>
         </div>
-        <div className="w-full">
-          <div className="user-menu p-3 mt-auto">
-            <div className="text-center mb-3">
-              <i className="pi pi-user text-2xl"></i>
-              <div className="mt-2 text-sm font-bold">{username}</div>
-            </div>
-
-            <div className="ml-1">
-              <Button icon="pi pi-sign-out" text onClick={handleLogout} />
-            </div>
-            <p>Logout</p>
+        <div className="user-menu mt-auto">
+          <div className="text-center mb-2">
+            <i className="pi pi-user text-lg"></i>
+            <div className="mt-1 text-xs font-bold">{username}</div>
+          </div>
+          <div className="text-center">
+            <Button
+              icon="pi pi-sign-out"
+              text
+              onClick={handleLogout}
+              label={compact ? "" : "Logout"}
+              className="p-button-sm"
+            />
           </div>
         </div>
       </div>

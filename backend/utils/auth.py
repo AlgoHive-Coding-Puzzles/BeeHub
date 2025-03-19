@@ -45,14 +45,13 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     except JWTError:
         raise credentials_exception
 
-    # Import User model here to avoid circular import
     from database import User
     user = db.query(User).filter(User.username == token_data.username).first()
     if user is None:
         raise credentials_exception
 
     # Update last connected time
-    user.last_connected = datetime.utcnow()
+    user.last_connected = datetime.now()
     db.commit()
 
     return user

@@ -285,9 +285,7 @@ class EnvServiceDiscovery:
         """
         # Generate a consistent service_id based on the URL
         service_id = f"url-{str(uuid.uuid5(uuid.NAMESPACE_URL, base_url))}"
-        
-        print(f"Discovering service at {base_url} with ID {service_id}")
-        
+                
         port = base_url.split(':')[-1] if ':' in base_url else None
         # http://localhost:5002 remove the port
         host = base_url.split('/')[2].split(':')[0] if '//' in base_url else base_url.split('/')[0]

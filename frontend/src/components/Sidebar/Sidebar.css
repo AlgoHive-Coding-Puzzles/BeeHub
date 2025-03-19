@@ -1,15 +1,19 @@
 nav {
   background: #1e1e1e;
-  width: 6rem !important;
-  overflow: hidden;
+  width: 6.5rem !important;
   position: fixed;
-  height: 100%;
+  height: 100vh; /* Utilise 100% de la hauteur visible */
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Permet le défilement si nécessaire */
 }
 
 nav .menu {
   width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centre les items verticalement */
 }
 
 nav .menu .menuitem {
@@ -18,8 +22,8 @@ nav .menu .menuitem {
   justify-content: center;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
 }
 
 nav .menu .menuitem a {
@@ -81,9 +85,48 @@ nav .menu .menuitem a:hover {
   font-size: 1.5rem;
 }
 
+/* Responsive scaling for different screen heights */
+@media screen and (max-height: 768px) {
+  nav .menu .menuitem-icon {
+    font-size: 1.3rem;
+    margin-bottom: 0.2rem;
+  }
+
+  nav .menu .menuitem-text {
+    font-size: 0.7rem;
+  }
+
+  nav .menu .menuitem {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
+@media screen and (max-height: 600px) {
+  nav .menu .menuitem-icon {
+    font-size: 1.1rem;
+    margin-bottom: 0.1rem;
+  }
+
+  nav .menu .menuitem-text {
+    font-size: 0.6rem;
+  }
+
+  nav .menu .menuitem {
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
+  }
+
+  .sidebar-logo i,
+  .sb-icon {
+    font-size: 1.2rem;
+  }
+}
+
 /* User menu styling */
 .user-menu {
   border-top: 1px solid #333;
-  padding-top: 1rem;
+  padding-top: 0.7rem;
   margin-top: auto;
+  padding-bottom: 0.5rem;
 }
