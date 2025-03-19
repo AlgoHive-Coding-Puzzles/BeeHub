@@ -370,6 +370,12 @@ class UnifiedServiceDiscovery:
             logger.info("Service discovery is disabled")
             return []
         
+        TARGET_PORTS = list(range(settings.DISCOVERY_PORT_RANGE_START, settings.DISCOVERY_PORT_RANGE_END + 1))
+        if target_ports:
+            target_ports = [port for port in target_ports if port in TARGET_PORTS]
+        else:
+            target_ports = TARGET_PORTS
+                    
         docker_services = self.docker_discovery.discover_services(target_ports)
         local_services = self.local_discovery.discover_services(target_ports)
         env_services = self.env_discovery.discover_services(target_ports)

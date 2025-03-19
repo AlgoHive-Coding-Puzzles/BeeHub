@@ -58,20 +58,7 @@ export const ensureArticleTag = (html: string): string => {
  * Gets the allowed HTML elements for the rich text editor
  */
 export const getAllowedElements = (): string[] => {
-  return [
-    "article",
-    "h2",
-    "h3",
-    "h4",
-    "h5",
-    "h6",
-    "p",
-    "span",
-    "div",
-    "code",
-    "pre",
-    "br",
-  ];
+  return ["article", "h2", "h3", "h4", "p", "span", "div", "code", "pre", "br"];
 };
 
 /**
@@ -90,14 +77,6 @@ export const getBlockElements = (): { tag: string; label: string }[] => {
     {
       tag: "h4",
       label: "Heading 4",
-    },
-    {
-      tag: "h5",
-      label: "Heading 5",
-    },
-    {
-      tag: "h6",
-      label: "Heading 6",
     },
     {
       tag: "p",
@@ -139,7 +118,7 @@ export const applyEditorClasses = (htmlContent: string): string => {
     el.classList.add("editor-code-block");
   });
 
-  doc.querySelectorAll("h2, h3, h4, h5, h6").forEach((el) => {
+  doc.querySelectorAll("h2, h3, h4").forEach((el) => {
     el.classList.add("editor-heading");
   });
 

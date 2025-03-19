@@ -53,9 +53,11 @@ const RichTextContentEditable = ({
     const selection = window.getSelection();
     if (!selection || !selection.rangeCount) return;
 
-    // If the selection is not {anchorNode: text
-    if (selection.anchorNode?.nodeName !== "#text") {
-      selection.collapseToEnd();
+    if (
+      selection.anchorNode !== editorRef.current &&
+      !editorRef.current?.contains(selection.anchorNode)
+    ) {
+      return;
     }
 
     const range = selection.getRangeAt(0);
@@ -146,9 +148,8 @@ const RichTextContentEditable = ({
         }
         .toolbar-button {
           padding: 4px 8px;
-          background-color: #ff690b;
           border: 1px solid #414448;
-          border-radius: 4px;
+          border-radius: 10px;
           cursor: pointer;
         }
         .toolbar-button:hover {

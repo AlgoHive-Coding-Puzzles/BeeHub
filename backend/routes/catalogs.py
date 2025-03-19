@@ -209,7 +209,7 @@ async def get_catalog_access(
     """Get list of user IDs with access to a catalog (owner only)."""
     catalog = db.query(Catalog).filter(Catalog.id == catalog_id).first()
     if not catalog:
-        raise HTTPException(status_code=404, detail="Catalog not found")
+        return []
     
     user_ids = [user.id for user in catalog.users]
     return user_ids

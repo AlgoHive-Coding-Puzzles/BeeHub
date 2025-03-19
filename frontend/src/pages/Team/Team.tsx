@@ -545,7 +545,13 @@ const TeamPage = () => {
               {catalogs.map((catalog) => (
                 <div
                   key={catalog.id}
-                  className="catalog-access-item p-3 border rounded-lg hover:bg-gray-50"
+                  className="catalog-access-item p-3 border rounded-l hover:border-blue-500 transition duration-200"
+                  style={
+                    // hover
+                    selectedCatalogIds.includes(Number(catalog.id))
+                      ? { borderColor: "#007ad9" }
+                      : {}
+                  }
                 >
                   <div className="field-checkbox mb-0">
                     <Checkbox

@@ -45,7 +45,7 @@ const HtmlRichTextEditor = ({ value, onChange }: HtmlRichTextEditorProps) => {
 
   return (
     <div className="html-rich-text-editor w-full">
-      <div className="editor-mode-toggle mb-2 flex justify-content-end">
+      <div className="editor-mode-toggle mb-6 flex justify-content-end">
         <Button
           label={editorMode === "rich" ? "Show HTML" : "Rich Text Mode"}
           icon={editorMode === "rich" ? "pi pi-code" : "pi pi-eye"}
