@@ -1,7 +1,7 @@
 import { Service } from "../types/Service";
 
 export const getServices = async (): Promise<Service[]> => {
-  const response = await fetch("/services/", {
+  const response = await fetch("/api/services/", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

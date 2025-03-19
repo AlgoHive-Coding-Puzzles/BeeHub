@@ -31,7 +31,7 @@ export default class AuthService {
     username: string,
     password: string
   ): Promise<LoginResponse> {
-    const response = await fetch("/auth/login", {
+    const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export default class AuthService {
         return false;
       }
 
-      const response = await fetch("/auth/check", {
+      const response = await fetch("/api/auth/check", {
         headers: {
           Authorization: `Bearer ${this.getToken()}`,
         },

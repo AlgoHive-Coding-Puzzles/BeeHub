@@ -116,11 +116,11 @@ function AppContent() {
 
   return (
     <div className="app-container">
-      <Toast ref={toast} />
       <AppSidebar
         selectedMenu={selectedMenu}
         setSelectedMenu={setSelectedMenu}
       />
+      <Toast ref={toast} />
 
       <div className="content-container">
         {!selectedCatalog && catalogs.length > 0 && (

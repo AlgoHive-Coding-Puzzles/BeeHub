@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request, status, BackgroundTasks
+from fastapi import APIRouter, FastAPI, Request, status, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import asyncio
+import os
 
 from routes import auth, users, catalogs, services
 from database import create_tables, create_admin_user
@@ -43,7 +45,7 @@ async def periodic_discovery():
         except Exception as e:
             print(f"Error in periodic discovery: {e}")
         # Wait 30 seconds before next discovery
-        await asyncio.sleep(30)
+        await asyncio.sleep(60 * 10)
 
 
 # Initialize FastAPI with enhanced OpenAPI documentation
@@ -78,23 +80,45 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include all routers
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-app.include_router(users.router, prefix="/users", tags=["Users"])
-app.include_router(catalogs.router, prefix="/catalogs", tags=["Catalogs"])
-app.include_router(services.router, prefix="/services", tags=["Services"])
+# Create an API router with /api prefix
+api_router = APIRouter(prefix="/api")
 
+# Include all routers under the API router
+api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(users.router, prefix="/users", tags=["Users"])
+api_router.include_router(catalogs.router, prefix="/catalogs", tags=["Catalogs"])
+api_router.include_router(services.router, prefix="/services", tags=["Services"])
+
+# Include the API router in the main app
+app.include_router(api_router)
+
+# Create static folder if it doesn't exist
+os.makedirs("static/assets", exist_ok=True)
+
+# Mount static files middleware for serving the React app
+app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to BeeAPI Backend"}
+    # Serve the React app's index.html as default route
+    return FileResponse("static/index.html")
 
+# Update the catch-all route to handle the new API path
+@app.get("/{full_path:path}")
+async def serve_react_app(full_path: str):
+    # API routes are handled by their respective routers
+    if full_path.startswith(("api/", "docs", "redoc", "openapi.json")):
+        raise HTTPException(status_code=404, detail="Not found")
+    
+    # For all other routes, serve the React app and let React Router handle them
+    return FileResponse("static/index.html")
 
 # Add redirect from /apidocs/ to /docs for Swagger UI
 @app.get("/apidocs/", include_in_schema=False)

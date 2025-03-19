@@ -1,6 +1,7 @@
 import classNames from "classnames";
-import UserMenu from "../UserMenu/UserMenu";
 import "./Sidebar.css";
+import { useAuth } from "../../contexts/AuthContext";
+import { Button } from "primereact/button";
 
 interface SidebarProps {
   selectedMenu: string;
@@ -11,6 +12,13 @@ export default function Sidebar({
   selectedMenu,
   setSelectedMenu,
 }: SidebarProps) {
+  const { username, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/login";
+  };
+
   const items = [
     {
       label: "Home",
@@ -60,7 +68,7 @@ export default function Sidebar({
         <div className="mb-8 mt-4 text-center">
           <i className="pi pi-box text-orange-500 sb-icon"></i>
         </div>
-        <div className="w-full">
+        <div className="w-full" style={{ marginTop: "2rem" }}>
           <ul className="menu p-reset">
             {items.map((item) => (
               <li
@@ -84,8 +92,18 @@ export default function Sidebar({
             ))}
           </ul>
         </div>
-        <div className="mt-auto">
-          <UserMenu />
+        <div className="w-full">
+          <div className="user-menu p-3 mt-auto">
+            <div className="text-center mb-3">
+              <i className="pi pi-user text-2xl"></i>
+              <div className="mt-2 text-sm font-bold">{username}</div>
+            </div>
+
+            <div className="ml-1">
+              <Button icon="pi pi-sign-out" text onClick={handleLogout} />
+            </div>
+            <p>Logout</p>
+          </div>
         </div>
       </div>
     </nav>

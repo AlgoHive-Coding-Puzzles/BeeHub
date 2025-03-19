@@ -59,9 +59,9 @@ nav .menu .menuitem a:hover {
 
 /* Logo en haut */
 .sidebar-logo {
-  background: #ff6600;
   padding: 1rem;
   text-align: center;
+  color: orange;
 }
 
 .sidebar-logo i {

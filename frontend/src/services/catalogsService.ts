@@ -1,7 +1,7 @@
 import { Catalog } from "../types/Catalog";
 
 export const getCatalogs = async (): Promise<Catalog[]> => {
-  const response = await fetch("/catalogs/", {
+  const response = await fetch("/api/catalogs/", {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -29,7 +29,7 @@ export const createCatalog = async (
 ): Promise<Catalog> => {
   console.log(catalog);
 
-  const response = await fetch("/catalogs/", {
+  const response = await fetch("/api/catalogs/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
