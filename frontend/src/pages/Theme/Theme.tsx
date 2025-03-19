@@ -36,7 +36,7 @@ export default function ThemePage({ selectedTheme }: ThemeProps) {
 
   const handleDeletePuzzle = (puzzle: Puzzle) => {
     const token = AuthService.getToken();
-    fetch(`/puzzle?theme=${selectedTheme}&puzzle=${puzzle.name}`, {
+    fetch(`/api/puzzle?theme=${selectedTheme}&puzzle=${puzzle.name}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

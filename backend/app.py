@@ -7,12 +7,13 @@ import uvicorn
 import asyncio
 import os
 
+from config import settings
 from routes import auth, users, catalogs, services
 from database import create_tables, create_admin_user
 from services.discovery import service_discovery
 
 # All the ports from 5000 to 5100
-TARGET_PORTS = list(range(5000, 5100))
+TARGET_PORTS = list(range(settings.DISCOVERY_PORT_RANGE_START, settings.DISCOVERY_PORT_RANGE_END + 1))
 
 # Setup lifespan context manager (replacing on_event)
 @asynccontextmanager
@@ -136,4 +137,4 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8081, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=settings.APP_PORT, reload=True)

@@ -1,0 +1,49 @@
+# Version control
+.git
+.github
+.gitignore
+
+# Node.js
+frontend/node_modules
+frontend/dist
+frontend/.vscode
+frontend/.npm
+frontend/npm-debug.log
+frontend/*.log
+frontend/.env*
+
+# Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+backend/.Python
+backend/env/
+backend/build/
+backend/develop-eggs/
+backend/dist/
+backend/downloads/
+backend/eggs/
+backend/.eggs/
+backend/lib/
+backend/lib64/
+backend/parts/
+backend/sdist/
+backend/var/
+backend/*.egg-info/
+backend/.installed.cfg
+backend/*.egg
+backend/.env
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# Other
+*.md
+*.log
+.vscode/
+.idea/
+*.swp
+*.swo

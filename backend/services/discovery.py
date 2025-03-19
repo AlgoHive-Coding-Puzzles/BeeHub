@@ -1,15 +1,15 @@
+from config import settings
 import docker
 from docker.errors import DockerException
 import logging
 import socket
 import psutil
-import os
 import platform
-import subprocess
 import uuid
 from typing import List, Dict, Any, Optional, Set, Tuple
 from datetime import datetime
 import json
+import requests
 
 from database import DiscoveredService, SessionLocal
 
@@ -228,13 +228,135 @@ class LocalServiceDiscovery:
             logger.error(f"Error getting process info for PID {pid}: {e}")
             return None
 
+class EnvServiceDiscovery:
+    """Discovers services based on URLs configured in environment variables"""
+    
+    def __init__(self):
+        self.urls = settings.DISCOVERY_URLS
+    
+    def get_urls(self) -> List[str]:
+        """
+        Parse and return the URLs configured in environment variables
+        
+        Returns:
+            List of URLs to be discovered
+        """
+        if not self.urls:
+            return []
+            
+        # Split by comma if multiple URLs are provided
+        if ',' in self.urls:
+            urls = [url.strip() for url in self.urls.split(',')]
+        else:
+            urls = [self.urls.strip()]
+            
+        # Filter out any empty strings
+        return [url for url in urls if url]
+    
+    def discover_services(self, target_ports: Optional[List[int]] = None) -> List[Dict[str, Any]]:
+        """
+        Discover services from configured URLs and attempt to fetch their details
+        
+        Args:
+            target_ports: Not used for URL-based discovery
+            
+        Returns:
+            List of service info dictionaries
+        """
+        urls = self.get_urls()
+        discovered_services = []
+        
+        for url in urls:
+            service_info = self._get_service_info(url)
+            if service_info:
+                discovered_services.append(service_info)
+        
+        return discovered_services
+    
+    def _get_service_info(self, base_url: str) -> Dict[str, Any]:
+        """
+        Fetch service information from a given URL
+        
+        Args:
+            base_url: Base URL of the service
+            
+        Returns:
+            Dictionary with service details
+        """
+        # Generate a consistent service_id based on the URL
+        service_id = f"url-{str(uuid.uuid5(uuid.NAMESPACE_URL, base_url))}"
+        
+        print(f"Discovering service at {base_url} with ID {service_id}")
+        
+        port = base_url.split(':')[-1] if ':' in base_url else None
+        # http://localhost:5002 remove the port
+        host = base_url.split('/')[2].split(':')[0] if '//' in base_url else base_url.split('/')[0]
+        
+        # Set default values
+        service_info = {
+            'service_id': service_id,
+            'name': f"API: {base_url}",
+            'service_type': 'external',
+            'host': host,
+            'port': port,
+            'status': 'unknown',
+            'additional_ports': [],
+            'details': {'url': base_url}
+        }
+        
+        try:
+            # Try to fetch API details from common endpoints
+            response = self._fetch_endpoint(f"{base_url}/name") or \
+                   self._fetch_endpoint(f"{base_url}/api/name")
+            
+            # Update service info with fetched details
+            if response:
+                service_info['name'] = response.get('name', base_url)
+                service_info['details']['description'] = response.get('description', 'No description available')
+            
+            # Set status based on successful connection
+            service_info['status'] = 'running'
+                
+        except Exception as e:
+            logger.error(f"Error fetching details for {base_url}: {e}")
+            service_info['status'] = 'error'
+            service_info['details']['error'] = str(e)
+            
+        return service_info
+    
+    def _fetch_endpoint(self, url: str) -> Any:
+        """
+        Fetch data from an endpoint
+        
+        Args:
+            url: URL to fetch from
+            
+        Returns:
+            Response data or None if request failed
+        """
+        try:
+            response = requests.get(url, timeout=3)
+            if response.status_code == 200:
+                try:
+                    return response.json()
+                except ValueError:
+                    return response.text
+            return None
+        except Exception:
+            return None
+
 
 class UnifiedServiceDiscovery:
     """Combines Docker and local service discovery"""
     
     def __init__(self):
+        if not settings.DISCOVERY_ENABLED:
+            logger.info("Service discovery is disabled")
+            return
+        
         self.docker_discovery = DockerServiceDiscovery()
         self.local_discovery = LocalServiceDiscovery()
+        self.env_discovery = EnvServiceDiscovery()
     
     def discover_services(self, target_ports: Optional[List[int]] = None) -> List[Dict[str, Any]]:
         """
@@ -246,8 +368,13 @@ class UnifiedServiceDiscovery:
         Returns:
             Combined list of discovered services
         """
+        if not settings.DISCOVERY_ENABLED:
+            logger.info("Service discovery is disabled")
+            return []
+        
         docker_services = self.docker_discovery.discover_services(target_ports)
         local_services = self.local_discovery.discover_services(target_ports)
+        env_services = self.env_discovery.discover_services(target_ports)
         
         # Filter out local services that match Docker services to avoid duplicates
         docker_ports = {service['port'] for service in docker_services if service['port'] is not None}
@@ -256,7 +383,7 @@ class UnifiedServiceDiscovery:
             if service['port'] not in docker_ports
         ]
         
-        return docker_services + filtered_local_services
+        return docker_services + env_services + filtered_local_services
     
     def sync_with_database(self, target_ports: Optional[List[int]] = None) -> List[DiscoveredService]:
         """
@@ -281,8 +408,29 @@ class UnifiedServiceDiscovery:
             
             updated_services = []
             
-            # Update or create services
+            # Process discovered services to ensure they have all required fields
+            processed_services = []
             for service_info in discovered_services:
+                # Handle URL-based services from EnvServiceDiscovery
+                if 'url' in service_info and 'service_id' not in service_info:
+                    url = service_info['url']
+                    # Generate a consistent service_id based on the URL
+                    service_id = f"url-{str(uuid.uuid5(uuid.NAMESPACE_URL, url))}"
+                    processed_service = {
+                        'service_id': service_id,
+                        'name': f"External Service: {url}",
+                        'service_type': 'external',
+                        'host': url,
+                        'port': None,
+                        'status': 'available',
+                        'additional_ports': [],
+                        'details': {'url': url}
+                    }
+                    processed_services.append(processed_service)
+                else:
+                    processed_services.append(service_info)
+            
+            for service_info in processed_services:
                 service_id = service_info['service_id']
                 
                 if service_id in existing_services:
@@ -312,7 +460,7 @@ class UnifiedServiceDiscovery:
                 updated_services.append(service)
             
             # Remove services that no longer exist
-            current_ids = {s['service_id'] for s in discovered_services}
+            current_ids = {s['service_id'] for s in processed_services}
             for service_id, service in existing_services.items():
                 if service_id not in current_ids:
                     db.delete(service)

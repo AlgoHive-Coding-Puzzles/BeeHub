@@ -16,6 +16,7 @@ import {
   getCatalogs,
   updateCatalog,
   deleteCatalog,
+  createCatalog,
   UpdateCatalogDto,
 } from "../../services/catalogsService";
 import { getServices } from "../../services/servicesService";
@@ -30,8 +31,15 @@ const Settings: React.FC = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [editDialog, setEditDialog] = useState(false);
+  const [createDialog, setCreateDialog] = useState(false);
   const [selectedCatalog, setSelectedCatalog] = useState<Catalog | null>(null);
   const [editData, setEditData] = useState<UpdateCatalogDto>({
+    name: "",
+    description: "",
+    address: "",
+    private_key: "",
+  });
+  const [newCatalogData, setNewCatalogData] = useState<UpdateCatalogDto>({
     name: "",
     description: "",
     address: "",
@@ -150,6 +158,39 @@ const Settings: React.FC = () => {
     }
   };
 
+  const openCreateDialog = () => {
+    setNewCatalogData({
+      name: "",
+      description: "",
+      address: "",
+      private_key: "",
+    });
+    setCreateDialog(true);
+  };
+
+  const handleCreate = async () => {
+    try {
+      // @ts-expect-error pls
+      await createCatalog(newCatalogData);
+      toast.current?.show({
+        severity: "success",
+        summary: "Catalog Created",
+        detail: `${newCatalogData.name} has been created successfully`,
+        life: 3000,
+      });
+      setCreateDialog(false);
+      loadData();
+    } catch (error) {
+      console.error("Error creating catalog:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Creation Failed",
+        detail: "Could not create the catalog",
+        life: 3000,
+      });
+    }
+  };
+
   // DataTable action buttons template
   const actionBodyTemplate = (rowData: Catalog) => {
     return (
@@ -202,7 +243,15 @@ const Settings: React.FC = () => {
       >
         <TabPanel header="Catalogs Management">
           <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Manage Catalogs</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Manage Catalogs</h2>
+              <Button
+                label="Add Catalog"
+                icon="pi pi-plus"
+                onClick={openCreateDialog}
+                disabled={!isOwner}
+              />
+            </div>
 
             <DataTable
               value={catalogs}
@@ -347,6 +396,97 @@ const Settings: React.FC = () => {
             </div>
           </div>
         )}
+      </Dialog>
+
+      {/* Create Catalog Dialog */}
+      <Dialog
+        header="Create Catalog"
+        visible={createDialog}
+        onHide={() => setCreateDialog(false)}
+        style={{ width: "50vw" }}
+        breakpoints={{ "960px": "75vw", "641px": "100vw" }}
+        footer={
+          <div>
+            <Button
+              label="Cancel"
+              icon="pi pi-times"
+              className="p-button-text"
+              onClick={() => setCreateDialog(false)}
+            />
+            <Button label="Create" icon="pi pi-plus" onClick={handleCreate} />
+          </div>
+        }
+      >
+        <div className="p-fluid">
+          <div className="field mb-4">
+            <label htmlFor="createName" className="font-bold">
+              Name
+            </label>
+            <InputText
+              id="createName"
+              value={newCatalogData.name}
+              onChange={(e) =>
+                setNewCatalogData({ ...newCatalogData, name: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="field mb-4">
+            <label htmlFor="createDescription" className="font-bold">
+              Description
+            </label>
+            <InputTextarea
+              id="createDescription"
+              value={newCatalogData.description}
+              onChange={(e) =>
+                setNewCatalogData({
+                  ...newCatalogData,
+                  description: e.target.value,
+                })
+              }
+              rows={3}
+            />
+          </div>
+
+          <div className="field mb-4">
+            <label htmlFor="createAddress" className="font-bold">
+              Service Address
+            </label>
+            <InputText
+              id="createAddress"
+              value={newCatalogData.address}
+              onChange={(e) =>
+                setNewCatalogData({
+                  ...newCatalogData,
+                  address: e.target.value,
+                })
+              }
+            />
+            <small className="text-gray-500">Format: http://host:port</small>
+          </div>
+
+          <div className="field mb-4">
+            <label htmlFor="createApiKey" className="font-bold">
+              API Key
+            </label>
+            <Password
+              id="createApiKey"
+              value={newCatalogData.private_key}
+              onChange={(e) =>
+                setNewCatalogData({
+                  ...newCatalogData,
+                  private_key: e.target.value,
+                })
+              }
+              feedback={false}
+              toggleMask
+              className="w-full"
+            />
+            <small className="text-gray-500">
+              Enter the API key/private key for this catalog
+            </small>
+          </div>
+        </div>
       </Dialog>
     </div>
   );
