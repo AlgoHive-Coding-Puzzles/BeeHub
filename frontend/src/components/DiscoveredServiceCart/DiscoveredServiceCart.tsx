@@ -12,11 +12,13 @@ import { ProgressSpinner } from "primereact/progressspinner";
 interface DiscoveredServiceCartProps {
   service: Service;
   onCatalogAdded: () => void;
+  isOwner: boolean;
 }
 
 const DiscoveredServiceCart: React.FC<DiscoveredServiceCartProps> = ({
   service,
   onCatalogAdded,
+  isOwner = false,
 }) => {
   const [showKeyDialog, setShowKeyDialog] = useState(false);
   const [privateKey, setPrivateKey] = useState("");
@@ -157,6 +159,7 @@ const DiscoveredServiceCart: React.FC<DiscoveredServiceCartProps> = ({
             icon="pi pi-plus"
             className="p-button-sm"
             onClick={() => setShowKeyDialog(true)}
+            disabled={!isOwner}
           />
         </div>
       </Card>

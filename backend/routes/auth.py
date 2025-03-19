@@ -16,6 +16,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     username: str
+    is_owner: bool
 
 
 class UserResponse(BaseModel):
@@ -50,7 +51,8 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer", "username": user.username}
+    print(user.is_owner)
+    return {"access_token": access_token, "token_type": "bearer", "username": user.username, "is_owner": user.is_owner}
 
 
 @router.get("/user", response_model=UserResponse)

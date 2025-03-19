@@ -124,7 +124,7 @@ async def update_user(
 async def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_owner_user)  # Only owners can delete users
+    current_user: User = Depends(get_owner_user) 
 ):
     """Delete user (owner only)."""
     # Prevent owner from deleting themselves
@@ -163,3 +163,11 @@ async def change_password(
     db.commit()
     
     return {"message": "Password updated successfully"}
+
+@router.get("/is-owner", response_model=bool)
+async def is_owner(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Check if the current user is an owner."""
+    return current_user.is_owner

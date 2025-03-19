@@ -1,6 +1,7 @@
 export interface User {
   username: string;
   createdAt: number;
+  is_owner: boolean;
 }
 
 export interface LoginResponse {
@@ -55,7 +56,7 @@ export default class AuthService {
     username: string,
     password: string
   ): Promise<{ message: string }> {
-    const response = await fetch("/auth/register", {
+    const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +75,7 @@ export default class AuthService {
 
   static async logout(): Promise<void> {
     try {
-      await fetch("/auth/logout", {
+      await fetch("/api/auth/logout", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${this.getToken()}`,
@@ -89,7 +90,7 @@ export default class AuthService {
   }
 
   static async deleteAccount(): Promise<{ message: string }> {
-    const response = await fetch("/auth/delete-account", {
+    const response = await fetch("/api/auth/delete-account", {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${this.getToken()}`,
@@ -109,7 +110,7 @@ export default class AuthService {
   }
 
   static async getCurrentUser(): Promise<User> {
-    const response = await fetch("/auth/user", {
+    const response = await fetch("/api/auth/user", {
       headers: {
         Authorization: `Bearer ${this.getToken()}`,
       },

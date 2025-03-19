@@ -20,12 +20,14 @@ import {
 } from "../../services/catalogsService";
 import { getServices } from "../../services/servicesService";
 import DiscoveredServiceCart from "../../components/DiscoveredServiceCart/DiscoveredServiceCart";
+import AuthService from "../../services/AuthService";
 
 const Settings: React.FC = () => {
   const [catalogs, setCatalogs] = useState<Catalog[]>([]);
   const [unregisteredServices, setUnregisteredServices] = useState<Service[]>(
     []
   );
+  const [isOwner, setIsOwner] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [editDialog, setEditDialog] = useState(false);
   const [selectedCatalog, setSelectedCatalog] = useState<Catalog | null>(null);
@@ -48,6 +50,8 @@ const Settings: React.FC = () => {
       // Load catalogs and services
       const catalogsData = await getCatalogs();
       const servicesData = await getServices();
+      const user = await AuthService.getCurrentUser();
+      setIsOwner(user.is_owner);
 
       setCatalogs(catalogsData);
 
@@ -155,12 +159,14 @@ const Settings: React.FC = () => {
           className="p-button-rounded p-button-success p-button-sm"
           onClick={() => openEditDialog(rowData)}
           tooltip="Edit"
+          disabled={!isOwner}
         />
         <Button
           icon="pi pi-trash"
           className="p-button-rounded p-button-danger p-button-sm"
           onClick={() => confirmDeleteCatalog(rowData)}
           tooltip="Delete"
+          disabled={!isOwner}
         />
       </div>
     );
@@ -245,6 +251,7 @@ const Settings: React.FC = () => {
                     key={service.id}
                     service={service}
                     onCatalogAdded={handleCatalogAdded}
+                    isOwner={isOwner}
                   />
                 ))}
               </div>
