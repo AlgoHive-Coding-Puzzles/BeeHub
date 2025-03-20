@@ -5,6 +5,8 @@ import { createEditorTemplate } from "./utils/htmlConverter";
 import HtmlEditorPanel from "./components/HtmlEditorPanel";
 import PythonForgeEditorPanel from "./components/PythonForgeEditorPanel";
 import SolutionEditorsPanel from "./components/SolutionEditorsPanel";
+import PropertiesFormPanel from "./components/PropertiesFormPanel";
+import HelpDocumentationPanel from "./components/HelpDocumentationPanel";
 
 const Forge = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -66,6 +68,11 @@ if __name__ == '__main__':
     print(solution)
 `);
 
+  // Properties form states
+  const [authorName, setAuthorName] = useState("");
+  const [language, setLanguage] = useState("en");
+  const [difficulty, setDifficulty] = useState("MEDIUM");
+
   const toast = useRef<Toast>(null);
 
   // Validate HTML according to specifications
@@ -80,53 +87,188 @@ if __name__ == '__main__':
     setIsValidHtml(validateHtml(html));
   }, [html]);
 
-  const handleValidatePuzzle = () => {
+  const validateForgeClass = (
+    code: string
+  ): { valid: boolean; issues: string[] } => {
     const issues = [];
+
+    // Check for class definition
+    if (!code.includes("class Forge")) {
+      issues.push("Missing 'class Forge' definition");
+    }
+
+    // Check for required methods
+    if (
+      !code.includes(
+        "def __init__(self, lines_count: int, unique_id: str = None)"
+      )
+    ) {
+      issues.push("Missing or incorrect constructor method in forge.py");
+    }
+
+    if (!code.includes("def run(self)")) {
+      issues.push("Missing 'run' method in forge.py");
+    }
+
+    if (!code.includes("def generate_line(self, index: int)")) {
+      issues.push("Missing 'generate_line' method in forge.py");
+    }
+
+    // Check for return types
+    if (!code.includes("def run(self) -> list")) {
+      issues.push(
+        "'run' method should specify return type -> list in forge.py"
+      );
+    }
+
+    if (!code.includes("def generate_line(self, index: int) -> str")) {
+      issues.push(
+        "'generate_line' method should specify return type -> str in forge.py"
+      );
+    }
+
+    // Check if implementation exists (not just placeholder)
+    if (code.includes("# TODO") && code.includes("pass")) {
+      issues.push(
+        "Implementation needed: 'generate_line' method contains placeholder code"
+      );
+    }
+
+    return {
+      valid: issues.length === 0,
+      issues,
+    };
+  };
+
+  const validateDecryptClass = (
+    code: string
+  ): { valid: boolean; issues: string[] } => {
+    const issues = [];
+
+    // Check for class definition
+    if (!code.includes("class Decrypt")) {
+      issues.push("Missing 'class Decrypt' definition");
+    }
+
+    // Check for required methods
+    if (!code.includes("def __init__(self, lines")) {
+      issues.push("Missing or incorrect constructor method in decrypt.py");
+    }
+
+    if (!code.includes("def run(self)")) {
+      issues.push("Missing 'run' method in decrypt.py");
+    }
+
+    // Check if implementation exists (not just placeholder)
+    if (code.includes("# TODO") && code.includes("pass")) {
+      issues.push(
+        "Implementation needed: 'run' method in decrypt.py contains placeholder code"
+      );
+    }
+
+    return {
+      valid: issues.length === 0,
+      issues,
+    };
+  };
+
+  const validateUnveilClass = (
+    code: string
+  ): { valid: boolean; issues: string[] } => {
+    const issues = [];
+
+    // Check for class definition
+    if (!code.includes("class Unveil")) {
+      issues.push("Missing 'class Unveil' definition");
+    }
+
+    // Check for required methods
+    if (!code.includes("def __init__(self, lines")) {
+      issues.push("Missing or incorrect constructor method in unveil.py");
+    }
+
+    if (!code.includes("def run(self)")) {
+      issues.push("Missing 'run' method in unveil.py");
+    }
+
+    // Check if implementation exists (not just placeholder)
+    if (code.includes("# TODO") && code.includes("pass")) {
+      issues.push(
+        "Implementation needed: 'run' method in unveil.py contains placeholder code"
+      );
+    }
+
+    return {
+      valid: issues.length === 0,
+      issues,
+    };
+  };
+
+  const handleValidatePuzzle = () => {
+    let allIssues = [];
+    let hasWarnings = false;
 
     // Validate HTML
     if (!isValidHtml) {
-      issues.push("HTML must contain an <article> tag");
+      allIssues.push("HTML must contain an <article> tag");
     }
 
-    // Validate forge.py code
+    // Validate forge.py code with detailed validation
+    const forgeValidation = validateForgeClass(pythonForgeCode);
+    if (!forgeValidation.valid) {
+      allIssues = [...allIssues, ...forgeValidation.issues];
+    }
+
+    // Validate decrypt.py code with detailed validation
+    const decryptValidation = validateDecryptClass(pythonDecryptCode);
+    if (!decryptValidation.valid) {
+      allIssues = [...allIssues, ...decryptValidation.issues];
+    }
+
+    // Validate unveil.py code with detailed validation
+    const unveilValidation = validateUnveilClass(pythonUnveilCode);
+    if (!unveilValidation.valid) {
+      allIssues = [...allIssues, ...unveilValidation.issues];
+    }
+
+    // Validate properties
+    if (!authorName.trim()) {
+      allIssues.push("Author name is required in Properties tab");
+    }
+
+    // Check for TODO or pass (warnings but not errors)
     if (
-      !(
-        pythonForgeCode.includes("class Forge") &&
-        pythonForgeCode.includes("def __init__(") &&
-        pythonForgeCode.includes("def run(") &&
-        pythonForgeCode.includes("def generate_line(")
-      )
+      pythonForgeCode.includes("# TODO") &&
+      pythonForgeCode.includes("pass")
     ) {
-      issues.push("forge.py must contain class Forge with proper methods");
+      hasWarnings = true;
     }
-
-    // Validate decrypt.py code
     if (
-      !(
-        pythonDecryptCode.includes("class Decrypt") &&
-        pythonDecryptCode.includes("def __init__(self, lines") &&
-        pythonDecryptCode.includes("def run(self)")
-      )
+      pythonDecryptCode.includes("# TODO") &&
+      pythonDecryptCode.includes("pass")
     ) {
-      issues.push("decrypt.py must contain class Decrypt with proper methods");
+      hasWarnings = true;
     }
-
-    // Validate unveil.py code
     if (
-      !(
-        pythonUnveilCode.includes("class Unveil") &&
-        pythonUnveilCode.includes("def __init__(self, lines") &&
-        pythonUnveilCode.includes("def run(self)")
-      )
+      pythonUnveilCode.includes("# TODO") &&
+      pythonUnveilCode.includes("pass")
     ) {
-      issues.push("unveil.py must contain class Unveil with proper methods");
+      hasWarnings = true;
     }
 
-    if (issues.length > 0) {
+    if (allIssues.length > 0) {
       toast.current?.show({
         severity: "error",
-        summary: "Validation Error",
-        detail: issues.join(". "),
+        summary: "Validation Failed",
+        detail: allIssues.join(". "),
+        life: 5000,
+      });
+    } else if (hasWarnings) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Validation Passed with Warnings",
+        detail:
+          "Puzzle structure is valid but contains TODO comments or placeholder code. Remember to implement all required functionality.",
         life: 5000,
       });
     } else {
@@ -176,6 +318,21 @@ if __name__ == '__main__':
             unveilCode={pythonUnveilCode}
             setUnveilCode={setPythonUnveilCode}
           />
+        </TabPanel>
+
+        <TabPanel header="Properties">
+          <PropertiesFormPanel
+            authorName={authorName}
+            setAuthorName={setAuthorName}
+            language={language}
+            setLanguage={setLanguage}
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
+          />
+        </TabPanel>
+
+        <TabPanel header="Help Documentation">
+          <HelpDocumentationPanel />
         </TabPanel>
       </TabView>
 

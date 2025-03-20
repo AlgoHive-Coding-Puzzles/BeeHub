@@ -287,6 +287,10 @@ if __name__ == '__main__':
             For testing, you can set <code>unique_id="test_seed"</code> for
             consistent results
           </li>
+          <li>
+            The line <code>if __name__ == 'main':</code> is used to run the
+            script directly from the command line and must be included
+          </li>
         </ul>
       </div>
 
