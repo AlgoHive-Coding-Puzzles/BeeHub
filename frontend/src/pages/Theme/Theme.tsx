@@ -28,20 +28,18 @@ export default function ThemePage({
   const [theme, setTheme] = useState<Theme>();
 
   useEffect(() => {
-    fromCatalogGetTheme(
-      selectedCatalog.address,
-      selectedCatalog.private_key,
-      selectedTheme as string
-    ).then((data) => {
-      data.puzzles.forEach((puzzle: Puzzle) => {
-        puzzle.compressedSize = convertBytes(puzzle.compressedSize as number);
-        puzzle.uncompressedSize = convertBytes(
-          puzzle.uncompressedSize as number
-        );
-      });
+    fromCatalogGetTheme(selectedCatalog.address, selectedTheme as string).then(
+      (data) => {
+        data.puzzles.forEach((puzzle: Puzzle) => {
+          puzzle.compressedSize = convertBytes(puzzle.compressedSize as number);
+          puzzle.uncompressedSize = convertBytes(
+            puzzle.uncompressedSize as number
+          );
+        });
 
-      setTheme(data);
-    });
+        setTheme(data);
+      }
+    );
   }, [
     selectedTheme,
     refreshTheme,
@@ -52,7 +50,6 @@ export default function ThemePage({
   const handleDeletePuzzle = (puzzle: Puzzle) => {
     fromCatalogDeletePuzzle(
       selectedCatalog.address,
-      selectedCatalog.private_key,
       selectedTheme as string,
       puzzle.name
     ).then((res) => {
