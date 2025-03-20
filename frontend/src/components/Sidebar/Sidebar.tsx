@@ -1,9 +1,9 @@
 import classNames from "classnames";
-import "./Sidebar.css";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "primereact/button";
 import { Catalog } from "../../types/Catalog";
 import { useEffect, useRef, useState } from "react";
+import "./Sidebar.css";
 
 interface SidebarProps {
   selectedMenu: string;
