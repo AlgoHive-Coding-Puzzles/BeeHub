@@ -11,8 +11,6 @@ from utils.filesystem import ensure_data_directory_exists
 # Ensure data directory exists before creating the database connection
 ensure_data_directory_exists()
 
-print("Database URL:", settings.DATABASE_URL)
-
 # Create database engine with improved connection pooling
 engine = create_engine(
     settings.DATABASE_URL,
