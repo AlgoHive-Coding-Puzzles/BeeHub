@@ -42,10 +42,7 @@ export default function CatalogPage({
       try {
         setLoading(true);
 
-        const themes = await fromCatalogFetchThemes(
-          currentCatalog.address,
-          currentCatalog.private_key
-        );
+        const themes = await fromCatalogFetchThemes(currentCatalog.address);
 
         setThemes(themes);
       } catch (error) {
@@ -63,16 +60,14 @@ export default function CatalogPage({
   const handleReload = () => {
     if (!currentCatalog) return;
 
-    fromCatalogReload(currentCatalog.address, currentCatalog.private_key).then(
-      (res) => {
-        if (res.ok) {
-          setSuccessMsg("Data reloaded successfully");
-          reloadData();
-        } else {
-          setErrorMsg("An error occurred while reloading the data");
-        }
+    fromCatalogReload(currentCatalog.address).then((res) => {
+      if (res.ok) {
+        setSuccessMsg("Data reloaded successfully");
+        reloadData();
+      } else {
+        setErrorMsg("An error occurred while reloading the data");
       }
-    );
+    });
 
     setTimeout(() => {
       setSuccessMsg(null);
@@ -83,11 +78,7 @@ export default function CatalogPage({
   const handleDeleteTheme = (theme: Theme) => {
     if (!currentCatalog) return;
 
-    fromCatalogDeleteTheme(
-      currentCatalog.address,
-      currentCatalog.private_key,
-      theme.name
-    ).then((res) => {
+    fromCatalogDeleteTheme(currentCatalog.address, theme.name).then((res) => {
       if (res.ok) {
         setSuccessMsg("Theme deleted successfully");
         reloadData();
@@ -105,11 +96,7 @@ export default function CatalogPage({
   const handleCreateTheme = () => {
     if (!currentCatalog) return;
 
-    fromCatalogCreateTheme(
-      currentCatalog.address,
-      currentCatalog.private_key,
-      newThemeName
-    ).then((res) => {
+    fromCatalogCreateTheme(currentCatalog.address, newThemeName).then((res) => {
       if (res.ok) {
         setSuccessMsg("Theme created successfully");
         setNewThemeDialogVisible(false);
@@ -129,7 +116,7 @@ export default function CatalogPage({
   const reloadData = () => {
     if (!currentCatalog) return;
 
-    fromCatalogFetchThemes(currentCatalog.address, currentCatalog.private_key)
+    fromCatalogFetchThemes(currentCatalog.address)
       .then((data) => {
         setThemes(data);
       })
@@ -248,29 +235,33 @@ export default function CatalogPage({
                   key={theme.name}
                   title={"Folder " + theme.name}
                   subTitle={`Enigmes: ${theme.enigmes_count}`}
-                  header=<>
-                    <img
-                      alt="Card"
-                      src="https://primefaces.org/cdn/primereact/images/usercard.png"
-                    />
-                  </>
-                  footer=<>
-                    <Button
-                      label="Consult"
-                      icon="pi pi-check"
-                      style={{ marginRight: "10px" }}
-                      onClick={() => {
-                        setSelectedMenu("Theme");
-                        setSelectedTheme(theme.name);
-                      }}
-                    />
-                    <Button
-                      label="Delete"
-                      icon="pi pi-times"
-                      className="p-button-danger"
-                      onClick={() => handleDeleteTheme(theme)}
-                    />
-                  </>
+                  header={
+                    <>
+                      <img
+                        alt="Card"
+                        src="https://primefaces.org/cdn/primereact/images/usercard.png"
+                      />
+                    </>
+                  }
+                  footer={
+                    <>
+                      <Button
+                        label="Consult"
+                        icon="pi pi-check"
+                        style={{ marginRight: "10px" }}
+                        onClick={() => {
+                          setSelectedMenu("Theme");
+                          setSelectedTheme(theme.name);
+                        }}
+                      />
+                      <Button
+                        label="Delete"
+                        icon="pi pi-times"
+                        className="p-button-danger"
+                        onClick={() => handleDeleteTheme(theme)}
+                      />
+                    </>
+                  }
                   className="md:w-25rem"
                 >
                   <p>

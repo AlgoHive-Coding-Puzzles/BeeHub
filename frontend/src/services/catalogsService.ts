@@ -104,15 +104,18 @@ export const getCatalogById = async (catalogId: string): Promise<Catalog> => {
   return data as Catalog;
 };
 
-export const fromCatalogFetchThemes = async (address: string, key: string) => {
+export const fromCatalogFetchThemes = async (address: string) => {
   try {
-    const response = await fetch(`${address}/themes`, {
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(`/api/proxy/catalog/${catalogId}/themes`, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
+
     if (!response.ok) {
       throw new Error("Failed to fetch themes");
     }
@@ -124,18 +127,21 @@ export const fromCatalogFetchThemes = async (address: string, key: string) => {
   }
 };
 
-export const fromCatalogReload = async (
-  address: string,
-  key: string
-): Promise<Response> => {
+export const fromCatalogReload = async (address: string): Promise<Response> => {
   try {
-    const response = await fetch(`${address}/theme/reload`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(
+      `/api/proxy/catalog/${catalogId}/theme/reload`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error("Failed to reload themes");
     }
@@ -148,17 +154,22 @@ export const fromCatalogReload = async (
 
 export const fromCatalogDeleteTheme = async (
   address: string,
-  key: string,
   themeName: string
 ): Promise<Response> => {
   try {
-    const response = await fetch(`${address}/theme?name=${themeName}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(
+      `/api/proxy/catalog/${catalogId}/theme?name=${themeName}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error("Failed to delete theme");
     }
@@ -171,17 +182,22 @@ export const fromCatalogDeleteTheme = async (
 
 export const fromCatalogCreateTheme = async (
   address: string,
-  key: string,
   themeName: string
 ): Promise<Response> => {
   try {
-    const response = await fetch(`${address}/theme?name=${themeName}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(
+      `/api/proxy/catalog/${catalogId}/theme?name=${themeName}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error("Failed to create theme");
     }
@@ -193,17 +209,22 @@ export const fromCatalogCreateTheme = async (
 };
 
 export const fromCatalogRefreshThemes = async (
-  address: string,
-  key: string
+  address: string
 ): Promise<Response> => {
   try {
-    const response = await fetch(`${address}/theme/reload`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(
+      `/api/proxy/catalog/${catalogId}/theme/reload`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error("Failed to refresh themes");
     }
@@ -216,18 +237,22 @@ export const fromCatalogRefreshThemes = async (
 
 export const fromCatalogUploadPuzzle = async (
   address: string,
-  key: string,
   theme: string,
   fileFormData: FormData
 ) => {
   try {
-    const response = await fetch(`${address}/puzzle/upload?theme=${theme}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-      },
-      body: fileFormData,
-    });
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(
+      `/api/proxy/catalog/${catalogId}/puzzle/upload?theme=${theme}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: fileFormData,
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to upload puzzle");
@@ -241,17 +266,22 @@ export const fromCatalogUploadPuzzle = async (
 
 export const fromCatalogGetTheme = async (
   address: string,
-  key: string,
   themeName: string
 ): Promise<Theme> => {
   try {
-    const response = await fetch(`${address}/theme?name=${themeName}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const catalogId = await extractCatalogIdFromAddress(address);
+
+    const response = await fetch(
+      `/api/proxy/catalog/${catalogId}/theme?name=${themeName}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
     if (!response.ok) {
       throw new Error("Failed to get theme");
     }
@@ -266,21 +296,23 @@ export const fromCatalogGetTheme = async (
 
 export const fromCatalogDeletePuzzle = async (
   address: string,
-  key: string,
   themeName: string,
   puzzleName: string
 ): Promise<Response> => {
   try {
+    const catalogId = await extractCatalogIdFromAddress(address);
+
     const response = await fetch(
-      `${address}/puzzle?theme=${themeName}&puzzle=${puzzleName}`,
+      `/api/proxy/catalog/${catalogId}/puzzle?theme=${themeName}&puzzle=${puzzleName}`,
       {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${key}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       }
     );
+
     if (!response.ok) {
       throw new Error("Failed to delete puzzle");
     }
@@ -290,3 +322,51 @@ export const fromCatalogDeletePuzzle = async (
     throw error;
   }
 };
+
+// Helper function to extract catalog ID from address
+function extractCatalogIdFromAddress(address: string): Promise<number> {
+  return findCatalogIdByAddress(address);
+}
+
+// Function to find catalog ID by address
+async function findCatalogIdByAddress(address: string): Promise<number> {
+  try {
+    // Try to get catalogs from cache first
+    const cachedCatalogs = localStorage.getItem("catalogs");
+    if (cachedCatalogs) {
+      const catalogs = JSON.parse(cachedCatalogs);
+      const catalog = catalogs.find((c: Catalog) => c.address === address);
+      if (catalog) {
+        return catalog.id;
+      }
+    }
+
+    // If not in cache, fetch from API
+    const response = await fetch("/api/catalogs/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch catalogs");
+    }
+
+    const catalogs = await response.json();
+    const catalog = catalogs.find((c: Catalog) => c.address === address);
+
+    if (!catalog) {
+      throw new Error(`Catalog with address ${address} not found`);
+    }
+
+    // Store in cache for future use
+    localStorage.setItem("catalogs", JSON.stringify(catalogs));
+
+    return catalog.id;
+  } catch (error) {
+    console.error("Error finding catalog ID:", error);
+    throw error;
+  }
+}
