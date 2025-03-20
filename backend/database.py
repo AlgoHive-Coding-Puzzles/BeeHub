@@ -6,6 +6,8 @@ from datetime import datetime
 from config import settings
 from utils.password import get_password_hash
 
+print("Database URL:", settings.DATABASE_URL)
+
 # Create database engine with improved connection pooling
 engine = create_engine(
     settings.DATABASE_URL,
