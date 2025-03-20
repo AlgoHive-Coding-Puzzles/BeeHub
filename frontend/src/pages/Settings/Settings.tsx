@@ -170,6 +170,19 @@ const Settings: React.FC = () => {
 
   const handleCreate = async () => {
     try {
+      if (
+        !newCatalogData.address?.startsWith("http://") &&
+        !newCatalogData.address?.startsWith("https://")
+      ) {
+        toast.current?.show({
+          severity: "error",
+          summary: "Invalid Address",
+          detail: "Address must start with http:// or https://",
+          life: 3000,
+        });
+        return;
+      }
+
       // @ts-expect-error pls
       await createCatalog(newCatalogData);
       toast.current?.show({
