@@ -11,6 +11,11 @@ from utils.filesystem import ensure_data_directory_exists
 # Ensure data directory exists before creating the database connection
 ensure_data_directory_exists()
 
+# Ensure database directory exists
+db_path = os.path.dirname(settings.DATABASE_URL.replace('sqlite:///', ''))
+if db_path and not os.path.exists(db_path):
+    os.makedirs(db_path, exist_ok=True)
+
 # Create database engine with improved connection pooling
 engine = create_engine(
     settings.DATABASE_URL,
