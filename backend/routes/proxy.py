@@ -211,3 +211,42 @@ async def proxy_delete_puzzle(
             )
         except httpx.RequestError as e:
             raise HTTPException(status_code=503, detail=f"Error communicating with catalog service: {str(e)}")
+
+
+@router.get("/test-connection")
+async def test_connection(
+    host: str,
+    port: int,
+    key: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Test connection to a catalog service with the provided key."""
+    # Only owners can test connections
+    if not current_user.is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only owners can test service connections"
+        )
+    
+    address = f"http://{host}:{port}"
+    
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        try:
+            response = await client.get(
+                f"{address}/apikey",
+                headers={"Authorization": f"Bearer {key}"},
+                timeout=5.0  # Short timeout for quick feedback
+            )
+            
+            return {
+                "success": response.status_code == 200,
+                "status_code": response.status_code,
+                "message": "Connection successful" if response.status_code == 200 else "Connection failed"
+            }
+        except httpx.RequestError as e:
+            return {
+                "success": False,
+                "status_code": None,
+                "message": f"Error connecting to service: {str(e)}"
+            }

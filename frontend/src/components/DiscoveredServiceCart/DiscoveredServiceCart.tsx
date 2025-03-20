@@ -28,21 +28,27 @@ const DiscoveredServiceCart: React.FC<DiscoveredServiceCartProps> = ({
   const handleAddCatalog = async () => {
     setIsLoading(true);
     try {
-      // Test connection first with the provided key
-      const apiUrl = `http://${service.host}:${service.port}/apikey`;
-      const testResponse = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${privateKey}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // Test connection through proxy
+      const testResponse = await fetch(
+        `/api/proxy/test-connection?host=${service.host}&port=${service.port}&key=${privateKey}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-      if (!testResponse.ok) {
+      const testResult = await testResponse.json();
+
+      if (!testResult.success) {
         toast.current?.show({
           severity: "error",
           summary: "Connection Failed",
-          detail: "Could not connect to the service with the provided key",
+          detail:
+            testResult.message ||
+            "Could not connect to the service with the provided key",
           life: 5000,
         });
         setIsLoading(false);
