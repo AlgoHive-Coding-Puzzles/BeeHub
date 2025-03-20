@@ -8,7 +8,7 @@ import asyncio
 import os
 
 from config import settings
-from routes import auth, users, catalogs, services
+from routes import auth, users, catalogs, services, proxy
 from database import create_tables, create_admin_user
 from services.discovery import service_discovery
 
@@ -95,6 +95,7 @@ api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(catalogs.router, prefix="/catalogs", tags=["Catalogs"])
 api_router.include_router(services.router, prefix="/services", tags=["Services"])
+api_router.include_router(proxy.router, prefix="/proxy", tags=["Proxy"])
 
 # Include the API router in the main app
 app.include_router(api_router)
