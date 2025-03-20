@@ -11,6 +11,7 @@ from config import settings
 from routes import auth, users, catalogs, services, proxy
 from database import create_tables, create_admin_user
 from services.discovery import service_discovery
+from utils.filesystem import ensure_data_directory_exists
 
 # All the ports from 5000 to 5100
 TARGET_PORTS = list(range(settings.DISCOVERY_PORT_RANGE_START, settings.DISCOVERY_PORT_RANGE_END + 1))
@@ -19,6 +20,7 @@ TARGET_PORTS = list(range(settings.DISCOVERY_PORT_RANGE_START, settings.DISCOVER
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup actions
+    ensure_data_directory_exists()
     create_tables()
     create_admin_user()
     

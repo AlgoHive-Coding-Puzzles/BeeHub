@@ -2,9 +2,14 @@ from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
+import os
 
 from config import settings
 from utils.password import get_password_hash
+from utils.filesystem import ensure_data_directory_exists
+
+# Ensure data directory exists before creating the database connection
+ensure_data_directory_exists()
 
 print("Database URL:", settings.DATABASE_URL)
 

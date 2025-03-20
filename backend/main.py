@@ -7,6 +7,7 @@ import uvicorn
 # Import modules
 from database import create_tables, create_admin_user
 from routes import auth, users, catalogs, proxy  # Add proxy import
+from utils.filesystem import ensure_data_directory_exists
 
 app = FastAPI(
     title="AlgoHive BeeHub API",
@@ -57,6 +58,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Create database tables and admin user on startup
 @app.on_event("startup")
 async def startup_event():
+    # Ensure data directory exists
+    ensure_data_directory_exists()
     create_tables()
     create_admin_user()
 
