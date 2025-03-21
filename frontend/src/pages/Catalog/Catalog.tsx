@@ -115,7 +115,7 @@ export default function CatalogPage({
   const reloadData = () => {
     if (!currentCatalog) return;
 
-    fromCatalogFetchThemes(currentCatalog.address)
+    fromCatalogFetchThemes(currentCatalog.id)
       .then((data) => {
         setThemes(data);
       })
