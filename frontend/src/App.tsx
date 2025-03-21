@@ -69,6 +69,8 @@ function AppContent() {
     >
       <AppSidebar
         selectedMenu={selectedMenu}
+        setCurrentCatalog={setCurrentCatalog}
+        setCurrentTheme={setCurrentTheme}
         currentCatalog={currentCatalog}
         currentTheme={currentTheme}
         setSelectedMenu={setSelectedMenu}

@@ -9,7 +9,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Database settings
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./data/beehub.db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./db/beehub.db")
     
     # Database connection settings
     DATABASE_POOL_SIZE: int = int(os.environ.get("DATABASE_POOL_SIZE", "20"))

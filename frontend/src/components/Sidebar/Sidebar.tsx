@@ -7,6 +7,8 @@ import "./Sidebar.css";
 
 interface SidebarProps {
   selectedMenu: string;
+  setCurrentCatalog: (catalog: Catalog | null) => void;
+  setCurrentTheme: (theme: string | null) => void;
   currentCatalog: Catalog | null;
   currentTheme: string | null;
   setSelectedMenu: (menu: string) => void;
@@ -14,6 +16,8 @@ interface SidebarProps {
 
 export default function Sidebar({
   selectedMenu,
+  setCurrentCatalog,
+  setCurrentTheme,
   currentCatalog,
   currentTheme,
   setSelectedMenu,
@@ -49,13 +53,20 @@ export default function Sidebar({
     {
       label: "Home",
       icon: "pi pi-home",
-      command: () => setSelectedMenu("Home"),
+      command: () => {
+        setSelectedMenu("Home");
+        setCurrentCatalog(null);
+        setCurrentTheme(null);
+      },
       className: classNames({ "active-menu-item": selectedMenu === "Home" }),
     },
     {
       label: "Catalog",
       icon: "pi pi-book",
-      command: () => setSelectedMenu("Catalog"),
+      command: () => {
+        setSelectedMenu("Catalog");
+        setCurrentTheme(null);
+      },
       className: classNames(
         { "active-menu-item": selectedMenu === "Catalog" },
         { "disabled-menu-item": !currentCatalog }
