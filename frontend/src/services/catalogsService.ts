@@ -104,10 +104,8 @@ export const getCatalogById = async (catalogId: string): Promise<Catalog> => {
   return data as Catalog;
 };
 
-export const fromCatalogFetchThemes = async (address: string) => {
+export const fromCatalogFetchThemes = async (catalogId: string) => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(`/api/proxy/catalog/${catalogId}/themes`, {
       method: "GET",
       headers: {
@@ -127,10 +125,10 @@ export const fromCatalogFetchThemes = async (address: string) => {
   }
 };
 
-export const fromCatalogReload = async (address: string): Promise<Response> => {
+export const fromCatalogReload = async (
+  catalogId: string
+): Promise<Response> => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/theme/reload`,
       {
@@ -153,12 +151,10 @@ export const fromCatalogReload = async (address: string): Promise<Response> => {
 };
 
 export const fromCatalogDeleteTheme = async (
-  address: string,
+  catalogId: string,
   themeName: string
 ): Promise<Response> => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/theme?name=${themeName}`,
       {
@@ -181,12 +177,10 @@ export const fromCatalogDeleteTheme = async (
 };
 
 export const fromCatalogCreateTheme = async (
-  address: string,
+  catalogId: string,
   themeName: string
 ): Promise<Response> => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/theme?name=${themeName}`,
       {
@@ -209,11 +203,9 @@ export const fromCatalogCreateTheme = async (
 };
 
 export const fromCatalogRefreshThemes = async (
-  address: string
+  catalogId: string
 ): Promise<Response> => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/theme/reload`,
       {
@@ -236,13 +228,11 @@ export const fromCatalogRefreshThemes = async (
 };
 
 export const fromCatalogUploadPuzzle = async (
-  address: string,
+  catalogId: string,
   theme: string,
   fileFormData: FormData
 ) => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/puzzle/upload?theme=${theme}`,
       {
@@ -265,12 +255,10 @@ export const fromCatalogUploadPuzzle = async (
 };
 
 export const fromCatalogGetTheme = async (
-  address: string,
+  catalogId: string,
   themeName: string
 ): Promise<Theme> => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/theme?name=${themeName}`,
       {
@@ -295,13 +283,11 @@ export const fromCatalogGetTheme = async (
 };
 
 export const fromCatalogDeletePuzzle = async (
-  address: string,
+  catalogId: string,
   themeName: string,
   puzzleName: string
 ): Promise<Response> => {
   try {
-    const catalogId = await extractCatalogIdFromAddress(address);
-
     const response = await fetch(
       `/api/proxy/catalog/${catalogId}/puzzle?theme=${themeName}&puzzle=${puzzleName}`,
       {
@@ -322,51 +308,3 @@ export const fromCatalogDeletePuzzle = async (
     throw error;
   }
 };
-
-// Helper function to extract catalog ID from address
-function extractCatalogIdFromAddress(address: string): Promise<number> {
-  return findCatalogIdByAddress(address);
-}
-
-// Function to find catalog ID by address
-async function findCatalogIdByAddress(address: string): Promise<number> {
-  try {
-    // Try to get catalogs from cache first
-    const cachedCatalogs = localStorage.getItem("catalogs");
-    if (cachedCatalogs) {
-      const catalogs = JSON.parse(cachedCatalogs);
-      const catalog = catalogs.find((c: Catalog) => c.address === address);
-      if (catalog) {
-        return catalog.id;
-      }
-    }
-
-    // If not in cache, fetch from API
-    const response = await fetch("/api/catalogs/", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch catalogs");
-    }
-
-    const catalogs = await response.json();
-    const catalog = catalogs.find((c: Catalog) => c.address === address);
-
-    if (!catalog) {
-      throw new Error(`Catalog with address ${address} not found`);
-    }
-
-    // Store in cache for future use
-    localStorage.setItem("catalogs", JSON.stringify(catalogs));
-
-    return catalog.id;
-  } catch (error) {
-    console.error("Error finding catalog ID:", error);
-    throw error;
-  }
-}

@@ -98,7 +98,7 @@ export default function FileUploadComponent({
           fileFormData.append("file", file, file.name);
 
           return fromCatalogUploadPuzzle(
-            selectedCatalog.address,
+            selectedCatalog.id,
             selectedTheme,
             fileFormData
           );
@@ -107,7 +107,7 @@ export default function FileUploadComponent({
 
       const allSuccessful = responses.every((response) => response.ok);
 
-      fromCatalogRefreshThemes(selectedCatalog.address).then((res) => {
+      fromCatalogRefreshThemes(selectedCatalog.id).then((res) => {
         if (res.ok) {
           setRefresh(true);
           // Remove the uploaded files from the file upload component

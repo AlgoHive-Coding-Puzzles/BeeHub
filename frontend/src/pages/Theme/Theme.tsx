@@ -28,7 +28,7 @@ export default function ThemePage({
   const [theme, setTheme] = useState<Theme>();
 
   useEffect(() => {
-    fromCatalogGetTheme(selectedCatalog.address, selectedTheme as string).then(
+    fromCatalogGetTheme(selectedCatalog.id, selectedTheme as string).then(
       (data) => {
         data.puzzles.forEach((puzzle: Puzzle) => {
           puzzle.compressedSize = convertBytes(puzzle.compressedSize as number);
@@ -43,13 +43,13 @@ export default function ThemePage({
   }, [
     selectedTheme,
     refreshTheme,
-    selectedCatalog.address,
+    selectedCatalog.id,
     selectedCatalog.private_key,
   ]);
 
   const handleDeletePuzzle = (puzzle: Puzzle) => {
     fromCatalogDeletePuzzle(
-      selectedCatalog.address,
+      selectedCatalog.id,
       selectedTheme as string,
       puzzle.name
     ).then((res) => {

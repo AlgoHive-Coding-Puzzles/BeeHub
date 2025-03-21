@@ -41,8 +41,7 @@ export default function CatalogPage({
     const fetchThemes = async () => {
       try {
         setLoading(true);
-
-        const themes = await fromCatalogFetchThemes(currentCatalog.address);
+        const themes = await fromCatalogFetchThemes(currentCatalog.id);
 
         setThemes(themes);
       } catch (error) {
@@ -60,7 +59,7 @@ export default function CatalogPage({
   const handleReload = () => {
     if (!currentCatalog) return;
 
-    fromCatalogReload(currentCatalog.address).then((res) => {
+    fromCatalogReload(currentCatalog.id).then((res) => {
       if (res.ok) {
         setSuccessMsg("Data reloaded successfully");
         reloadData();
@@ -78,7 +77,7 @@ export default function CatalogPage({
   const handleDeleteTheme = (theme: Theme) => {
     if (!currentCatalog) return;
 
-    fromCatalogDeleteTheme(currentCatalog.address, theme.name).then((res) => {
+    fromCatalogDeleteTheme(currentCatalog.id, theme.name).then((res) => {
       if (res.ok) {
         setSuccessMsg("Theme deleted successfully");
         reloadData();
@@ -96,7 +95,7 @@ export default function CatalogPage({
   const handleCreateTheme = () => {
     if (!currentCatalog) return;
 
-    fromCatalogCreateTheme(currentCatalog.address, newThemeName).then((res) => {
+    fromCatalogCreateTheme(currentCatalog.id, newThemeName).then((res) => {
       if (res.ok) {
         setSuccessMsg("Theme created successfully");
         setNewThemeDialogVisible(false);
