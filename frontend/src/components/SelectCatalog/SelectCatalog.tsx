@@ -20,6 +20,9 @@ export default function SelectCatalog({
     const fetchCatalogs = async () => {
       try {
         const data = await getCatalogs();
+        console.log("Fetched catalogs:", data);
+        console.log(currentCatalog);
+
         setCatalogs(data);
       } catch (error) {
         console.error("Error fetching catalogs:", error);
