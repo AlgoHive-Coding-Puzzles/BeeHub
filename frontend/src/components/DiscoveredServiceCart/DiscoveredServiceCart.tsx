@@ -30,7 +30,9 @@ const DiscoveredServiceCart: React.FC<DiscoveredServiceCartProps> = ({
     try {
       // Test connection through proxy
       const testResponse = await fetch(
-        `/api/proxy/test-connection?host=${service.host}&port=${service.port}&key=${privateKey}`,
+        `/api/proxy/test-connection?host=${encodeURIComponent(
+          service.host
+        )}&port=${encodeURIComponent(service.port)}&key=${privateKey}`,
         {
           method: "GET",
           headers: {

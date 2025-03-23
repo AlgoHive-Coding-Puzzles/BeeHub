@@ -233,7 +233,7 @@ class EnvServiceDiscovery:
     
     def __init__(self):
         self.urls = settings.DISCOVERY_URLS
-    
+            
     def get_urls(self) -> List[str]:
         """
         Parse and return the URLs configured in environment variables
@@ -249,7 +249,7 @@ class EnvServiceDiscovery:
             urls = [url.strip() for url in self.urls.split(',')]
         else:
             urls = [self.urls.strip()]
-            
+                        
         # Filter out any empty strings
         return [url for url in urls if url]
     
@@ -380,14 +380,7 @@ class UnifiedServiceDiscovery:
         local_services = self.local_discovery.discover_services(target_ports)
         env_services = self.env_discovery.discover_services(target_ports)
         
-        # Filter out local services that match Docker services to avoid duplicates
-        docker_ports = {service['port'] for service in docker_services if service['port'] is not None}
-        filtered_local_services = [
-            service for service in local_services 
-            if service['port'] not in docker_ports
-        ]
-        
-        return docker_services + env_services + filtered_local_services
+        return docker_services + local_services + env_services
     
     def sync_with_database(self, target_ports: Optional[List[int]] = None) -> List[DiscoveredService]:
         """

@@ -230,6 +230,7 @@ async def test_connection(
         )
     
     address = f"http://{host}:{port}"
+    key = key.replace(" ", "+")
     
     async with httpx.AsyncClient(timeout=10.0) as client:
         try:
