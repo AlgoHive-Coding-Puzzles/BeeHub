@@ -12,7 +12,7 @@ import Login from "./pages/Login/Login";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Forge from "./pages/Forge/Forge";
 import Settings from "./pages/Settings/Settings";
-import TeamPage from "./pages/Team/Team"; // Add import for Team page
+import TeamPage from "./pages/Team/Team";
 import { Catalog } from "./types/Catalog";
 import CatalogPage from "./pages/Catalog/Catalog";
 
