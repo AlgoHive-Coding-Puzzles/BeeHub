@@ -51,7 +51,7 @@ export default function ThemePage({
     fromCatalogDeletePuzzle(
       selectedCatalog.id,
       selectedTheme as string,
-      puzzle.name
+      puzzle.id
     ).then((res) => {
       if (res.ok) {
         toast.current?.show({
