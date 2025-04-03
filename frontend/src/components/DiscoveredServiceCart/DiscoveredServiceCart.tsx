@@ -43,6 +43,7 @@ const DiscoveredServiceCart: React.FC<DiscoveredServiceCartProps> = ({
       );
 
       const testResult = await testResponse.json();
+      console.log("Test result:", testResult);
 
       if (!testResult.success) {
         toast.current?.show({
