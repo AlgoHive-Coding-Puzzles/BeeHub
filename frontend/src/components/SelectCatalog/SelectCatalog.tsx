@@ -7,14 +7,16 @@ interface SelectCatalogProps {
   setSelectedMenu: (menu: string) => void;
   setSelectedCatalog: (catalog: Catalog | null) => void;
   currentCatalog: Catalog | null;
+  catalogs?: Catalog[];
 }
 
 export default function SelectCatalog({
   setSelectedMenu,
   currentCatalog,
   setSelectedCatalog,
+  catalogs = [],
 }: SelectCatalogProps) {
-  const [catalogs, setCatalogs] = useState<Catalog[]>([]);
+  const [_catalogs, setCatalogs] = useState<Catalog[]>([]);
 
   useEffect(() => {
     const fetchCatalogs = async () => {
@@ -26,8 +28,8 @@ export default function SelectCatalog({
       }
     };
 
-    fetchCatalogs();
-  }, []);
+    if (catalogs && catalogs.length > 0) fetchCatalogs();
+  }, [catalogs]);
 
   const handleCatalogChange = (selectedCatalog: Catalog) => {
     setSelectedCatalog(selectedCatalog);
@@ -41,7 +43,7 @@ export default function SelectCatalog({
       <h2 className="text-xl font-semibold mt-4">Select a Catalog</h2>
       <Dropdown
         value={currentCatalog}
-        options={catalogs}
+        options={_catalogs}
         onChange={(e) => handleCatalogChange(e.value)}
         placeholder="Select a Catalog"
         className="w-1/2 mt-4"

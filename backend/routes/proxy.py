@@ -213,6 +213,42 @@ async def proxy_delete_puzzle(
             raise HTTPException(status_code=503, detail=f"Error communicating with catalog service: {str(e)}")
 
 
+@router.post("/catalog/{catalog_id}/puzzle/hotswap")
+async def proxy_hotswap_puzzle(
+    catalog_id: int,
+    theme: str,
+    puzzle_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Proxy endpoint to hot swap a puzzle in a catalog."""
+    catalog = await get_catalog_by_id(catalog_id, db, current_user)
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        try:
+            content = await file.read()
+            
+            files = {"file": (file.filename, content, file.content_type)}
+            
+            print(f"Uploading file: {file.filename}, content type: {file.content_type}")
+            print(f"Catalog address: {catalog.address}")
+            response = await client.post(
+                f"{catalog.address}/puzzle/hotswap",
+                params={"theme": theme, "puzzle_id": puzzle_id},
+                headers={"Authorization": f"Bearer {catalog.private_key}"},
+                files=files
+            )
+            
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                media_type=response.headers.get("content-type", "application/json")
+            )
+        except httpx.RequestError as e:
+            raise HTTPException(status_code=503, detail=f"Error communicating with catalog service: {str(e)}")
+
+
 @router.get("/test-connection")
 async def test_connection(
     host: str,

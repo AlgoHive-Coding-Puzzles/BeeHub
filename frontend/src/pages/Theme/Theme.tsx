@@ -11,7 +11,9 @@ import { Catalog } from "../../types/Catalog";
 import {
   fromCatalogDeletePuzzle,
   fromCatalogGetTheme,
+  fromCatalogHotSwapPuzzle,
 } from "../../services/catalogsService";
+import HotSwapDialog from "../../components/HotSwapDialog/HotSwapDialog";
 
 interface ThemeProps {
   selectedCatalog: Catalog;
@@ -26,6 +28,8 @@ export default function ThemePage({
 
   const [refreshTheme, setRefreshTheme] = useState<boolean>(false);
   const [theme, setTheme] = useState<Theme>();
+  const [hotSwapDialogVisible, setHotSwapDialogVisible] = useState(false);
+  const [selectedPuzzle, setSelectedPuzzle] = useState<Puzzle | null>(null);
 
   useEffect(() => {
     fromCatalogGetTheme(selectedCatalog.id, selectedTheme as string).then(
@@ -70,12 +74,68 @@ export default function ThemePage({
     });
   };
 
+  const handleHotSwap = (puzzle: Puzzle) => {
+    setSelectedPuzzle(puzzle);
+    setHotSwapDialogVisible(true);
+  };
+
+  const handleHotSwapUpload = async (file: File) => {
+    if (!selectedPuzzle) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const result = await fromCatalogHotSwapPuzzle(
+        selectedCatalog.id,
+        selectedTheme as string,
+        selectedPuzzle.id,
+        formData
+      );
+
+      if (result.ok) {
+        toast.current?.show({
+          severity: "success",
+          summary: "Success",
+          detail: `Puzzle ${selectedPuzzle.name} hot swapped successfully`,
+        });
+        setRefreshTheme(!refreshTheme);
+      } else {
+        const errorData = await result.json();
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail:
+            errorData.error ||
+            `Failed to hot swap puzzle ${selectedPuzzle.name}`,
+        });
+      }
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: `Failed to hot swap puzzle: ${error}`,
+      });
+    }
+  };
+
   const createAtTemplate = (rowData: Puzzle) => {
     return rowData.createdAt.slice(0, 16);
   };
 
   const updatedAtTemplate = (rowData: Puzzle) => {
     return rowData.updatedAt.slice(0, 16);
+  };
+
+  const hotSwapButtonTemplate = (rowData: Puzzle) => {
+    return (
+      <Button
+        label="Hot Swap"
+        icon="pi pi-refresh"
+        className="p-button-success"
+        onClick={() => handleHotSwap(rowData)}
+      />
+    );
   };
 
   const deleteButtonTemplate = (rowData: Puzzle) => {
@@ -98,6 +158,7 @@ export default function ThemePage({
     { field: "createdAt", header: "Created", body: createAtTemplate },
     { field: "updatedAt", header: "Updated", body: updatedAtTemplate },
     { field: "author", header: "Author" },
+    { field: "hotSwap", header: "Hot Swap", body: hotSwapButtonTemplate },
     { field: "delete", header: "Delete", body: deleteButtonTemplate },
   ];
 
@@ -124,6 +185,13 @@ export default function ThemePage({
         selectedCatalog={selectedCatalog}
         selectedTheme={selectedTheme as string}
         setRefresh={setRefreshTheme}
+      />
+
+      <HotSwapDialog
+        visible={hotSwapDialogVisible}
+        onHide={() => setHotSwapDialogVisible(false)}
+        onUpload={handleHotSwapUpload}
+        puzzle={selectedPuzzle}
       />
     </div>
   );

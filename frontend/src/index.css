@@ -49,3 +49,31 @@
   margin: 0 auto;
   padding: 2rem;
 }
+
+/* Custom styles for catalog cards */
+.catalog-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.catalog-card:hover {
+  border-color: rgba(255, 165, 0, 0.5);
+  box-shadow: 0 0 15px rgba(255, 165, 0, 0.2);
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 640px) {
+  .content-container {
+    margin-left: 6.5rem !important;
+    padding: 0.5rem !important;
+  }
+}
+
+/* Enhance PrimeReact components with Tailwind */
+.p-button.p-button-sm {
+  @apply text-xs py-1 px-2;
+}
+
+.p-tag {
+  @apply text-xs font-semibold;
+}

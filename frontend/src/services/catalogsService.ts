@@ -308,3 +308,21 @@ export const fromCatalogDeletePuzzle = async (
     throw error;
   }
 };
+
+export const fromCatalogHotSwapPuzzle = (
+  catalogId: string,
+  theme: string,
+  puzzleId: string,
+  formData: FormData
+): Promise<Response> => {
+  return fetch(
+    `/api/proxy/catalog/${catalogId}/puzzle/hotswap?theme=${theme}&puzzle_id=${puzzleId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    }
+  );
+};
